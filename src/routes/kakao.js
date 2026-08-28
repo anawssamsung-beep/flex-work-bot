@@ -15,7 +15,35 @@ router.post("/webhook", async (req, res) => {
   );
 
 
-  const response = {
+  // 카카오 사용자 ID
+  const userId =
+    req.body?.userRequest?.user?.id;
+
+
+  // 사용자가 입력한 메시지
+  const utterance =
+    req.body?.userRequest?.utterance;
+
+
+  console.log("userId =", userId);
+  console.log("utterance =", utterance);
+
+
+  const selection =
+    parseSelection(utterance);
+
+
+  if (selection) {
+
+    console.log(
+      "선택:",
+      selection
+    );
+
+  }
+
+
+  res.json({
 
     version: "2.0",
 
@@ -24,44 +52,14 @@ router.post("/webhook", async (req, res) => {
       outputs: [
 
         {
-          carousel: {
+          simpleText: {
 
-            type: "basicCard",
-
-            items: [
-
-              createDayCard(
-                "월요일",
-                "monday"
-              ),
-
-              createDayCard(
-                "수요일",
-                "wednesday"
-              ),
-
-              createDayCard(
-                "금요일",
-                "friday"
-              )
-
-            ]
+            text:
+              selection
+                ? `${selection.dayName} ${selection.typeName} 선택`
+                : "탄력근무 신청"
 
           }
-
-        }
-
-      ],
-
-      quickReplies: [
-
-        {
-          action: "message",
-
-          label: "✅ 전체 등록",
-
-          messageText:
-            "전체 등록"
 
         }
 
@@ -69,64 +67,89 @@ router.post("/webhook", async (req, res) => {
 
     }
 
-  };
-
-
-  res.json(response);
+  });
 
 });
 
 
-function createDayCard(
-  dayName,
-  day
-) {
+function parseSelection(text) {
 
-  return {
+  if (!text) {
+    return null;
+  }
 
-    title: dayName,
 
-    description:
-      "근무시간을 선택하세요.",
+  const values = {
 
-    buttons: [
+    "월요일 일찍": {
+      day: "monday",
+      dayName: "월요일",
+      type: "EARLY",
+      typeName: "일찍"
+    },
 
-      {
+    "월요일 늦게": {
+      day: "monday",
+      dayName: "월요일",
+      type: "LATE",
+      typeName: "늦게"
+    },
 
-        action: "message",
+    "월요일 취소": {
+      day: "monday",
+      dayName: "월요일",
+      type: "CANCEL",
+      typeName: "취소"
+    },
 
-        label: "🟢 일찍",
 
-        messageText:
-          `${day} EARLY`
+    "수요일 일찍": {
+      day: "wednesday",
+      dayName: "수요일",
+      type: "EARLY",
+      typeName: "일찍"
+    },
 
-      },
+    "수요일 늦게": {
+      day: "wednesday",
+      dayName: "수요일",
+      type: "LATE",
+      typeName: "늦게"
+    },
 
-      {
+    "수요일 취소": {
+      day: "wednesday",
+      dayName: "수요일",
+      type: "CANCEL",
+      typeName: "취소"
+    },
 
-        action: "message",
 
-        label: "🔵 늦게",
+    "금요일 일찍": {
+      day: "friday",
+      dayName: "금요일",
+      type: "EARLY",
+      typeName: "일찍"
+    },
 
-        messageText:
-          `${day} LATE`
+    "금요일 늦게": {
+      day: "friday",
+      dayName: "금요일",
+      type: "LATE",
+      typeName: "늦게"
+    },
 
-      },
-
-      {
-
-        action: "message",
-
-        label: "❌ 취소",
-
-        messageText:
-          `${day} CANCEL`
-
-      }
-
-    ]
+    "금요일 취소": {
+      day: "friday",
+      dayName: "금요일",
+      type: "CANCEL",
+      typeName: "취소"
+    }
 
   };
+
+
+  return values[text] || null;
 
 }
 
