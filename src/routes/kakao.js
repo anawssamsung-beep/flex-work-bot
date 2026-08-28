@@ -1,220 +1,389 @@
 import express from "express";
 
+
 import {
   saveWorkApplication,
   cancelWorkApplication
 } from "../services/flexService.js";
 
-const router = express.Router();
+
+const router =
+  express.Router();
 
 
-router.post("/webhook", async (req, res) => {
+/**
+ * 카카오 Webhook
+ */
+router.post(
+  "/webhook",
+  async (req, res) => {
 
-  try {
+    try {
 
-    console.log(
-      JSON.stringify(
-        req.body,
-        null,
-        2
-      )
-    );
-
-
-    // =========================
-    // 1. 카카오 사용자 ID
-    // =========================
-
-    const userId =
-      req.body?.userRequest?.user?.id;
+      console.log(
+        "========== KAKAO =========="
+      );
 
 
-    if (!userId) {
-
-      return res.json(
-        simpleText(
-          "사용자 정보를 확인할 수 없습니다."
+      console.log(
+        JSON.stringify(
+          req.body,
+          null,
+          2
         )
       );
 
-    }
+
+      /*
+       * 카카오 사용자 ID
+       */
+
+      const userId =
+        req.body
+          ?.userRequest
+          ?.user
+          ?.id;
 
 
-    // =========================
-    // 2. 사용자가 누른 메시지
-    // =========================
+      /*
+       * 사용자가 입력한 메시지
+       */
 
-    const utterance =
-      req.body?.userRequest?.utterance;
-
-
-    console.log("userId:", userId);
-    console.log("utterance:", utterance);
+      const utterance =
+        req.body
+          ?.userRequest
+          ?.utterance;
 
 
-    // =========================
-    // 3. 버튼 분석
-    // =========================
-
-    const selection =
-      parseSelection(utterance);
-
-
-    // 버튼이 아니라 일반 메시지
-    if (!selection) {
-
-      return res.json(
-        createApplicationCard()
+      console.log(
+        "userId:",
+        userId
       );
 
-    }
+
+      console.log(
+        "utterance:",
+        utterance
+      );
 
 
-    // =========================
-    // 4. 취소
-    // =========================
+      /*
+       * 사용자 ID 확인
+       */
 
-    if (selection.type === "CANCEL") {
+      if (!userId) {
 
-      await cancelWorkApplication({
+        return res.json(
 
-        userId,
+          simpleText(
+            "사용자 정보를 확인할 수 없습니다."
+          )
 
-        day:
-          selection.day
+        );
 
-      });
+      }
+
+
+      /*
+       * 버튼 선택 분석
+       */
+
+      const selection =
+        parseSelection(
+          utterance
+        );
+
+
+      /*
+       * 일반 메시지
+       *
+       * → 신청 카드
+       */
+
+      if (!selection) {
+
+        return res.json(
+
+          createApplicationCard()
+
+        );
+
+      }
+
+
+      /*
+       * 취소
+       */
+
+      if (
+        selection.type ===
+        "CANCEL"
+      ) {
+
+        const result =
+          await cancelWorkApplication({
+
+            userId,
+
+            day:
+              selection.day
+
+          });
+
+
+        return res.json(
+
+          simpleText(
+
+            `❌ ${result.message}`
+
+          )
+
+        );
+
+      }
+
+
+      /*
+       * 신청
+       */
+
+      const result =
+        await saveWorkApplication({
+
+          userId,
+
+          /*
+           * 현재는 테스트용
+           *
+           * 나중에 직원 Sheet에서
+           * userId → 이름 조회
+           */
+
+          name:
+            "테스트사용자",
+
+          day:
+            selection.day,
+
+          type:
+            selection.type
+
+        });
 
 
       return res.json(
+
         simpleText(
-          `${selection.dayName} 신청을 취소했습니다.`
+
+          `✅ ${result.message}`
+
         )
+
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Kakao Webhook Error:",
+        error
+      );
+
+
+      return res.json(
+
+        simpleText(
+
+          `⚠️ ${error.message}`
+
+        )
+
       );
 
     }
-
-
-    // =========================
-    // 5. 신청 저장
-    // =========================
-
-    await saveWorkApplication({
-
-      userId,
-
-      day:
-        selection.day,
-
-      type:
-        selection.type
-
-    });
-
-
-    return res.json(
-
-      simpleText(
-
-        `${selection.dayName} ${selection.typeName} 신청이 저장되었습니다.`
-
-      )
-
-    );
-
-
-  } catch (error) {
-
-    console.error(error);
-
-
-    return res.json(
-
-      simpleText(
-
-        `처리 중 오류가 발생했습니다.\n${error.message}`
-
-      )
-
-    );
 
   }
+);
 
-});
 
-
+/**
+ * 버튼 메시지 분석
+ */
 function parseSelection(text) {
 
   if (!text) {
+
     return null;
+
   }
 
 
   const values = {
 
+
+    /*
+     * 월요일
+     */
+
     "monday EARLY": {
-      day: "monday",
-      dayName: "월요일",
-      type: "EARLY",
-      typeName: "일찍"
+
+      day:
+        "monday",
+
+      dayName:
+        "월요일",
+
+      type:
+        "EARLY",
+
+      typeName:
+        "일찍"
+
     },
+
 
     "monday LATE": {
-      day: "monday",
-      dayName: "월요일",
-      type: "LATE",
-      typeName: "늦게"
+
+      day:
+        "monday",
+
+      dayName:
+        "월요일",
+
+      type:
+        "LATE",
+
+      typeName:
+        "늦게"
+
     },
+
 
     "monday CANCEL": {
-      day: "monday",
-      dayName: "월요일",
-      type: "CANCEL",
-      typeName: "취소"
+
+      day:
+        "monday",
+
+      dayName:
+        "월요일",
+
+      type:
+        "CANCEL",
+
+      typeName:
+        "취소"
+
     },
 
+
+    /*
+     * 수요일
+     */
 
     "wednesday EARLY": {
-      day: "wednesday",
-      dayName: "수요일",
-      type: "EARLY",
-      typeName: "일찍"
+
+      day:
+        "wednesday",
+
+      dayName:
+        "수요일",
+
+      type:
+        "EARLY",
+
+      typeName:
+        "일찍"
+
     },
+
 
     "wednesday LATE": {
-      day: "wednesday",
-      dayName: "수요일",
-      type: "LATE",
-      typeName: "늦게"
+
+      day:
+        "wednesday",
+
+      dayName:
+        "수요일",
+
+      type:
+        "LATE",
+
+      typeName:
+        "늦게"
+
     },
+
 
     "wednesday CANCEL": {
-      day: "wednesday",
-      dayName: "수요일",
-      type: "CANCEL",
-      typeName: "취소"
+
+      day:
+        "wednesday",
+
+      dayName:
+        "수요일",
+
+      type:
+        "CANCEL",
+
+      typeName:
+        "취소"
+
     },
 
+
+    /*
+     * 금요일
+     */
 
     "friday EARLY": {
-      day: "friday",
-      dayName: "금요일",
-      type: "EARLY",
-      typeName: "일찍"
+
+      day:
+        "friday",
+
+      dayName:
+        "금요일",
+
+      type:
+        "EARLY",
+
+      typeName:
+        "일찍"
+
     },
+
 
     "friday LATE": {
-      day: "friday",
-      dayName: "금요일",
-      type: "LATE",
-      typeName: "늦게"
+
+      day:
+        "friday",
+
+      dayName:
+        "금요일",
+
+      type:
+        "LATE",
+
+      typeName:
+        "늦게"
+
     },
 
+
     "friday CANCEL": {
-      day: "friday",
-      dayName: "금요일",
-      type: "CANCEL",
-      typeName: "취소"
+
+      day:
+        "friday",
+
+      dayName:
+        "금요일",
+
+      type:
+        "CANCEL",
+
+      typeName:
+        "취소"
+
     }
 
   };
@@ -225,38 +394,15 @@ function parseSelection(text) {
 }
 
 
-function simpleText(text) {
-
-  return {
-
-    version: "2.0",
-
-    template: {
-
-      outputs: [
-
-        {
-
-          simpleText: {
-            text
-          }
-
-        }
-
-      ]
-
-    }
-
-  };
-
-}
-
-
+/**
+ * 신청 카드
+ */
 function createApplicationCard() {
 
   return {
 
-    version: "2.0",
+    version:
+      "2.0",
 
     template: {
 
@@ -266,7 +412,8 @@ function createApplicationCard() {
 
           carousel: {
 
-            type: "basicCard",
+            type:
+              "basicCard",
 
             items: [
 
@@ -300,11 +447,18 @@ function createApplicationCard() {
 }
 
 
-function createDayCard(dayName, day) {
+/**
+ * 요일 카드
+ */
+function createDayCard(
+  dayName,
+  day
+) {
 
   return {
 
-    title: dayName,
+    title:
+      dayName,
 
     description:
       "근무시간을 선택하세요.",
@@ -312,27 +466,78 @@ function createDayCard(dayName, day) {
     buttons: [
 
       {
-        action: "message",
-        label: "🟢 일찍",
+
+        action:
+          "message",
+
+        label:
+          "🟢 일찍",
+
         messageText:
           `${day} EARLY`
+
       },
 
       {
-        action: "message",
-        label: "🔵 늦게",
+
+        action:
+          "message",
+
+        label:
+          "🔵 늦게",
+
         messageText:
           `${day} LATE`
+
       },
 
       {
-        action: "message",
-        label: "❌ 취소",
+
+        action:
+          "message",
+
+        label:
+          "❌ 취소",
+
         messageText:
           `${day} CANCEL`
+
       }
 
     ]
+
+  };
+
+}
+
+
+/**
+ * 단순 텍스트 응답
+ */
+function simpleText(text) {
+
+  return {
+
+    version:
+      "2.0",
+
+    template: {
+
+      outputs: [
+
+        {
+
+          simpleText: {
+
+            text
+
+          }
+
+        }
+
+      ]
+
+    }
 
   };
 

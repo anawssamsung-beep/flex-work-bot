@@ -4,10 +4,11 @@ import { google } from "googleapis";
 const privateKey =
   process.env.GOOGLE_PRIVATE_KEY;
 
+
 if (!privateKey) {
 
   throw new Error(
-    "GOOGLE_PRIVATE_KEY 환경변수가 없습니다."
+    "GOOGLE_PRIVATE_KEY가 없습니다."
   );
 
 }
@@ -41,8 +42,11 @@ const auth =
 
 const sheets =
   google.sheets({
+
     version: "v4",
+
     auth
+
   });
 
 
@@ -50,12 +54,12 @@ const spreadsheetId =
   process.env.GOOGLE_SHEET_ID;
 
 
-const RANGE =
+const APPLICATION_RANGE =
   "신청!A:H";
 
 
 /**
- * 전체 신청내역
+ * 신청내역 전체 조회
  */
 export async function getApplications() {
 
@@ -64,18 +68,21 @@ export async function getApplications() {
 
       spreadsheetId,
 
-      range: RANGE
+      range:
+        APPLICATION_RANGE
 
     });
 
 
-  return result.data.values || [];
+  return (
+    result.data.values || []
+  );
 
 }
 
 
 /**
- * 특정 사용자 + 특정 근무일 신청 조회
+ * 사용자 + 근무일 신청 조회
  */
 export async function findApplication(
   userId,
@@ -142,7 +149,8 @@ export async function appendApplication(
 
     spreadsheetId,
 
-    range: RANGE,
+    range:
+      APPLICATION_RANGE,
 
     valueInputOption:
       "USER_ENTERED",

@@ -2,7 +2,7 @@ const TIMEZONE = "Asia/Seoul";
 
 
 /**
- * 한국 현재시간
+ * 한국 현재 시간
  */
 export function getKoreaNow() {
 
@@ -19,7 +19,7 @@ export function getKoreaNow() {
 
 
 /**
- * 날짜를 YYYY-MM-DD로 변환
+ * YYYY-MM-DD
  */
 export function formatDate(date) {
 
@@ -42,7 +42,7 @@ export function formatDate(date) {
 
 
 /**
- * 날짜에 일수 더하기
+ * 날짜 + 일수
  */
 export function addDays(
   date,
@@ -110,6 +110,8 @@ export function getNextMonday() {
 
 
 /**
+ * 신청 마감시간
+ *
  * 근무일 전날 17:00
  */
 export function getDeadline(
@@ -136,7 +138,7 @@ export function getDeadline(
 
 
 /**
- * 특정 근무일 신청 가능 여부
+ * 신청 가능 여부
  */
 export function isApplyAvailable(
   workDate
@@ -154,7 +156,7 @@ export function isApplyAvailable(
 
 
 /**
- * 다음 신청 가능한 월/수/금 계산
+ * 신청 대상 주간 정보
  */
 export function getApplicationWeek() {
 
@@ -166,8 +168,9 @@ export function getApplicationWeek() {
 
 
   /*
-   * 금/토/일
-   * → 다음 주 월/수/금
+   * 금요일 / 토요일 / 일요일
+   *
+   * → 다음 주
    */
   if (
     day === 5 ||
@@ -175,35 +178,28 @@ export function getApplicationWeek() {
     day === 0
   ) {
 
-    const monday =
-      getNextMonday();
-
     return createWeekInfo(
-      monday
+      getNextMonday()
     );
 
   }
 
 
   /*
-   * 월/화/수/목
+   * 월~목
    *
-   * 현재 주의 아직 신청 가능한
-   * 근무일을 사용
+   * → 현재 주
    */
 
-  const monday =
-    getThisMonday();
-
   return createWeekInfo(
-    monday
+    getThisMonday()
   );
 
 }
 
 
 /**
- * 월/수/금 정보 생성
+ * 월 / 수 / 금 생성
  */
 function createWeekInfo(
   monday
@@ -227,19 +223,14 @@ function createWeekInfo(
     weekStart:
       formatDate(monday),
 
-    monday: createDayInfo(
-      monday
-    ),
+    monday:
+      createDayInfo(monday),
 
     wednesday:
-      createDayInfo(
-        wednesday
-      ),
+      createDayInfo(wednesday),
 
     friday:
-      createDayInfo(
-        friday
-      )
+      createDayInfo(friday)
 
   };
 
@@ -247,7 +238,7 @@ function createWeekInfo(
 
 
 /**
- * 근무일 정보
+ * 하루 정보
  */
 function createDayInfo(
   date
@@ -270,7 +261,7 @@ function createDayInfo(
 
 
 /**
- * 한국 시간 문자열
+ * 현재 한국시간 문자열
  */
 export function getKoreaDateTimeString() {
 

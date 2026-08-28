@@ -4,6 +4,7 @@ import {
   updateApplication
 } from "./googleSheetService.js";
 
+
 import {
   getApplicationWeek,
   getKoreaDateTimeString
@@ -12,26 +13,26 @@ import {
 
 const DAY_MAP = {
 
-  monday: "monday",
+  monday: true,
 
-  wednesday: "wednesday",
+  wednesday: true,
 
-  friday: "friday"
+  friday: true
 
 };
 
 
 const TYPE_MAP = {
 
-  EARLY: "EARLY",
+  EARLY: true,
 
-  LATE: "LATE"
+  LATE: true
 
 };
 
 
 /**
- * 신청
+ * 탄력근무 신청
  */
 export async function saveWorkApplication({
 
@@ -46,7 +47,7 @@ export async function saveWorkApplication({
 }) {
 
   /*
-   * 입력값 검사
+   * 사용자 확인
    */
 
   if (!userId) {
@@ -58,6 +59,10 @@ export async function saveWorkApplication({
   }
 
 
+  /*
+   * 요일 확인
+   */
+
   if (!DAY_MAP[day]) {
 
     throw new Error(
@@ -66,6 +71,10 @@ export async function saveWorkApplication({
 
   }
 
+
+  /*
+   * 근무형태 확인
+   */
 
   if (!TYPE_MAP[type]) {
 
@@ -104,14 +113,17 @@ export async function saveWorkApplication({
   if (!dayInfo.available) {
 
     throw new Error(
-      `${dayInfo.date} 신청은 마감되었습니다.`
+
+      `${dayInfo.date} 신청은 ` +
+      `전날 17:00에 마감되었습니다.`
+
     );
 
   }
 
 
   /*
-   * 중복 확인
+   * 기존 신청 조회
    */
 
   const existing =
@@ -124,13 +136,16 @@ export async function saveWorkApplication({
     );
 
 
+  /*
+   * 현재 시간
+   */
+
   const now =
     getKoreaDateTimeString();
 
 
   /*
-   * 이미 신청한 경우
-   * → 수정
+   * 이미 신청했으면 수정
    */
 
   if (existing) {
@@ -141,19 +156,19 @@ export async function saveWorkApplication({
 
     const updatedRow = [
 
-      old[0],
+      old[0],              // 신청ID
 
-      old[1],
+      old[1],              // 사용자ID
 
-      name || old[2],
+      name || old[2],      // 이름
 
-      old[3],
+      old[3],              // 근무일
 
-      type,
+      type,                // 근무형태
 
-      old[5],
+      old[5],              // 주차
 
-      old[6],
+      now,                 // 수정시간
 
       "ACTIVE"
 
@@ -171,10 +186,13 @@ export async function saveWorkApplication({
 
     return {
 
-      action: "UPDATE",
+      action:
+        "UPDATE",
 
       message:
-        `${dayInfo.date} 신청을 ${type === "EARLY" ? "일찍" : "늦게"}으로 변경했습니다.`
+
+        `${dayInfo.date} 신청을 ` +
+        `${getTypeName(type)}으로 변경했습니다.`
 
     };
 
@@ -217,14 +235,20 @@ export async function saveWorkApplication({
 
   return {
 
-    action: "INSERT",
+    action:
+      "INSERT",
 
     message:
-      `${dayInfo.date} ${type === "EARLY" ? "일찍" : "늦게"} 신청이 저장되었습니다.`
+
+      `${dayInfo.date} ` +
+      `${getTypeName(type)} 신청이 ` +
+      `저장되었습니다.`
 
   };
 
 }
+
+
 /**
  * 신청 취소
  */
@@ -235,6 +259,15 @@ export async function cancelWorkApplication({
   day
 
 }) {
+
+  if (!userId) {
+
+    throw new Error(
+      "사용자 ID가 없습니다."
+    );
+
+  }
+
 
   const week =
     getApplicationWeek();
@@ -254,20 +287,23 @@ export async function cancelWorkApplication({
 
 
   /*
-   * 마감 확인
+   * 마감 이후 취소 불가
    */
 
   if (!dayInfo.available) {
 
     throw new Error(
-      `${dayInfo.date} 취소 가능 시간이 지났습니다.`
+
+      `${dayInfo.date} 취소 가능 시간이 ` +
+      `지났습니다.`
+
     );
 
   }
 
 
   /*
-   * 기존 신청 조회
+   * 기존 신청 검색
    */
 
   const existing =
@@ -283,7 +319,9 @@ export async function cancelWorkApplication({
   if (!existing) {
 
     throw new Error(
+
       `${dayInfo.date} 신청내역이 없습니다.`
+
     );
 
   }
@@ -294,7 +332,7 @@ export async function cancelWorkApplication({
 
 
   /*
-   * CANCEL 상태로 변경
+   * CANCEL 처리
    */
 
   const updatedRow = [
@@ -311,7 +349,7 @@ export async function cancelWorkApplication({
 
     old[5],
 
-    old[6],
+    getKoreaDateTimeString(),
 
     "CANCEL"
 
@@ -329,11 +367,26 @@ export async function cancelWorkApplication({
 
   return {
 
-    action: "CANCEL",
+    action:
+      "CANCEL",
 
     message:
-      `${dayInfo.date} 신청을 취소했습니다.`
+
+      `${dayInfo.date} 신청을 ` +
+      `취소했습니다.`
 
   };
+
+}
+
+
+/**
+ * EARLY / LATE 한글 변환
+ */
+function getTypeName(type) {
+
+  return type === "EARLY"
+    ? "일찍"
+    : "늦게";
 
 }
