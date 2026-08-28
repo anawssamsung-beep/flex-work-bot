@@ -1,0 +1,16 @@
+{
+  "name": "flex-work-bot",
+  "version": "1.0.0",
+  "description": "Kakao flexible work chatbot",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "googleapis": "^148.0.0"
+  }
+}
