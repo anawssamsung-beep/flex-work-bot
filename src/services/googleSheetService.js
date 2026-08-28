@@ -1,32 +1,57 @@
 import { google } from "googleapis";
 
-const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+const privateKey =
+  process.env.GOOGLE_PRIVATE_KEY;
 
 if (!privateKey) {
+
   throw new Error(
     "GOOGLE_PRIVATE_KEY 환경변수가 없습니다."
   );
+
 }
 
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    project_id: process.env.GOOGLE_PROJECT_ID,
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: privateKey.replace(/\\n/g, "\n")
-  },
-  scopes: [
-    "https://www.googleapis.com/auth/spreadsheets"
-  ]
-});
 
-const sheets = google.sheets({
-  version: "v4",
-  auth
-});
+const auth =
+  new google.auth.GoogleAuth({
 
-const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    credentials: {
 
-const RANGE = "신청!A:K";
+      project_id:
+        process.env.GOOGLE_PROJECT_ID,
+
+      client_email:
+        process.env.GOOGLE_CLIENT_EMAIL,
+
+      private_key:
+        privateKey.replace(
+          /\\n/g,
+          "\n"
+        )
+
+    },
+
+    scopes: [
+      "https://www.googleapis.com/auth/spreadsheets"
+    ]
+
+  });
+
+
+const sheets =
+  google.sheets({
+    version: "v4",
+    auth
+  });
+
+
+const spreadsheetId =
+  process.env.GOOGLE_SHEET_ID;
+
+
+const RANGE =
+  "신청!A:H";
 
 
 /**
@@ -34,66 +59,84 @@ const RANGE = "신청!A:K";
  */
 export async function getApplications() {
 
-  const result = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: RANGE
-  });
+  const result =
+    await sheets.spreadsheets.values.get({
+
+      spreadsheetId,
+
+      range: RANGE
+
+    });
+
 
   return result.data.values || [];
+
 }
 
 
 /**
- * 특정 사용자의 특정 주차 신청 조회
+ * 특정 사용자 + 특정 근무일 신청 조회
  */
 export async function findApplication(
   userId,
-  weekStart
+  workDate
 ) {
 
-  const rows = await getApplications();
+  const rows =
+    await getApplications();
 
-  // 첫 번째 행은 헤더
-  for (let i = 1; i < rows.length; i++) {
 
-    const row = rows[i];
+  for (
+    let i = 1;
+    i < rows.length;
+    i++
+  ) {
 
-    const rowWeek = row[1];
-    const rowUserId = row[2];
+    const row =
+      rows[i];
+
+
+    const rowUserId =
+      row[1] || "";
+
+    const rowWorkDate =
+      row[3] || "";
+
+    const rowStatus =
+      row[7] || "";
+
 
     if (
-      rowWeek === weekStart &&
-      rowUserId === userId
+      rowUserId === userId &&
+      rowWorkDate === workDate &&
+      rowStatus === "ACTIVE"
     ) {
 
       return {
-        rowNumber: i + 1,
 
-        data: {
-          id: row[0] || "",
-          weekStart: row[1] || "",
-          userId: row[2] || "",
-          name: row[3] || "",
-          monday: row[4] || "",
-          wednesday: row[5] || "",
-          friday: row[6] || "",
-          status: row[7] || "",
-          createdAt: row[8] || "",
-          updatedAt: row[9] || "",
-          cancelledAt: row[10] || ""
-        }
+        rowNumber:
+          i + 1,
+
+        row
+
       };
+
     }
+
   }
 
+
   return null;
+
 }
 
 
 /**
- * 신규 신청
+ * 신청 추가
  */
-export async function appendApplication(row) {
+export async function appendApplication(
+  row
+) {
 
   await sheets.spreadsheets.values.append({
 
@@ -101,12 +144,18 @@ export async function appendApplication(row) {
 
     range: RANGE,
 
-    valueInputOption: "USER_ENTERED",
+    valueInputOption:
+      "USER_ENTERED",
 
-    insertDataOption: "INSERT_ROWS",
+    insertDataOption:
+      "INSERT_ROWS",
 
     requestBody: {
-      values: [row]
+
+      values: [
+        row
+      ]
+
     }
 
   });
@@ -115,7 +164,7 @@ export async function appendApplication(row) {
 
 
 /**
- * 특정 행 전체 수정
+ * 신청 수정
  */
 export async function updateApplication(
   rowNumber,
@@ -126,12 +175,18 @@ export async function updateApplication(
 
     spreadsheetId,
 
-    range: `신청!A${rowNumber}:K${rowNumber}`,
+    range:
+      `신청!A${rowNumber}:H${rowNumber}`,
 
-    valueInputOption: "USER_ENTERED",
+    valueInputOption:
+      "USER_ENTERED",
 
     requestBody: {
-      values: [row]
+
+      values: [
+        row
+      ]
+
     }
 
   });

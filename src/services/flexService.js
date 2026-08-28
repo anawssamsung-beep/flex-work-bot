@@ -1,254 +1,98 @@
 import {
-  addDays,
-  formatDate,
-  getNextMonday,
-  isApplyAvailable,
-  getKoreaDateTimeString, 
-} from "../utils/dateUtils.js";
-
-import {
-  findApplication,
   appendApplication,
+  findApplication,
   updateApplication
 } from "./googleSheetService.js";
 
+import {
+  getApplicationWeek,
+  getKoreaDateTimeString
+} from "../utils/dateUtils.js";
 
-/**
- * 다음 주 정보
- */
-export function getNextWeekInfo() {
 
-  const monday =
-    getNextMonday();
+const DAY_MAP = {
 
-  const wednesday =
-    addDays(monday, 2);
+  monday: "monday",
 
-  const friday =
-    addDays(monday, 4);
+  wednesday: "wednesday",
 
-  return {
+  friday: "friday"
 
-    weekStart:
-      formatDate(monday),
+};
 
-    monday: {
-      date: formatDate(monday),
-      available:
-        isApplyAvailable(monday)
-    },
 
-    wednesday: {
-      date: formatDate(wednesday),
-      available:
-        isApplyAvailable(wednesday)
-    },
+const TYPE_MAP = {
 
-    friday: {
-      date: formatDate(friday),
-      available:
-        isApplyAvailable(friday)
-    }
+  EARLY: "EARLY",
 
-  };
+  LATE: "LATE"
 
-}
+};
 
 
 /**
- * 다음 주 신청 등록/수정
- *
- * values:
- * {
- *   monday: "EARLY",
- *   wednesday: "LATE",
- *   friday: "EARLY"
- * }
+ * 신청
  */
-export async function saveApplication({
+export async function saveWorkApplication({
+
   userId,
+
   name,
-  monday,
-  wednesday,
-  friday
+
+  day,
+
+  type
+
 }) {
 
-  const week =
-    getNextWeekInfo();
+  /*
+   * 입력값 검사
+   */
 
-  const existing =
-    await findApplication(
-      userId,
-      week.weekStart
+  if (!userId) {
+
+    throw new Error(
+      "사용자 ID가 없습니다."
     );
 
-  const now =
-    getKoreaDateTimeString();
+  }
 
 
-  if (!existing) {
+  if (!DAY_MAP[day]) {
 
-    const applicationId =
-      `${Date.now()}`;
+    throw new Error(
+      "잘못된 근무일입니다."
+    );
 
-    const row = [
+  }
 
-      applicationId,
 
-      week.weekStart,
+  if (!TYPE_MAP[type]) {
 
-      userId,
-
-      name,
-
-      monday || "",
-
-      wednesday || "",
-
-      friday || "",
-
-      "ACTIVE",
-
-      now,
-
-      "",
-
-      ""
-
-    ];
-
-    await appendApplication(row);
-
-    return {
-      type: "INSERT",
-      data: row
-    };
+    throw new Error(
+      "잘못된 근무형태입니다."
+    );
 
   }
 
 
   /*
-   * 기존 신청이 있으면 수정
+   * 신청 주차
    */
 
-  const old =
-    existing.data;
-
-
-  const row = [
-
-    old.id,
-
-    old.weekStart,
-
-    old.userId,
-
-    old.name,
-
-    monday ?? old.monday,
-
-    wednesday ?? old.wednesday,
-
-    friday ?? old.friday,
-
-    "ACTIVE",
-
-    old.createdAt,
-
-    now,
-
-    ""
-
-  ];
-
-
-  await updateApplication(
-    existing.rowNumber,
-    row
-  );
-
-
-  return {
-    type: "UPDATE",
-    data: row
-  };
-
-}
-export async function cancelDay({
-  userId,
-  day
-}) {
-
   const week =
-    getNextWeekInfo();
+    getApplicationWeek();
 
-  const existing =
-    await findApplication(
-      userId,
-      week.weekStart
-    );
 
-  if (!existing) {
+  const dayInfo =
+    week[day];
+
+
+  if (!dayInfo) {
 
     throw new Error(
-      "신청내역이 없습니다."
+      "근무일 정보를 찾을 수 없습니다."
     );
-
-  }
-
-
-  const old =
-    existing.data;
-
-
-  let workDate;
-
-  let field;
-
-
-  switch (day) {
-
-    case "monday":
-
-      workDate =
-        new Date(
-          week.monday.date
-        );
-
-      field = "monday";
-
-      break;
-
-
-    case "wednesday":
-
-      workDate =
-        new Date(
-          week.wednesday.date
-        );
-
-      field = "wednesday";
-
-      break;
-
-
-    case "friday":
-
-      workDate =
-        new Date(
-          week.friday.date
-        );
-
-      field = "friday";
-
-      break;
-
-
-    default:
-
-      throw new Error(
-        "잘못된 요일입니다."
-      );
 
   }
 
@@ -257,77 +101,143 @@ export async function cancelDay({
    * 마감 확인
    */
 
-  if (!isApplyAvailable(workDate)) {
+  if (!dayInfo.available) {
 
     throw new Error(
-      "신청 마감시간이 지났습니다."
+      `${dayInfo.date} 신청은 마감되었습니다.`
     );
 
   }
 
 
-  const values = {
+  /*
+   * 중복 확인
+   */
 
-    monday: old.monday,
+  const existing =
+    await findApplication(
 
-    wednesday: old.wednesday,
+      userId,
 
-    friday: old.friday
+      dayInfo.date
 
-  };
-
-
-  values[field] = "";
+    );
 
 
   const now =
     getKoreaDateTimeString();
 
 
+  /*
+   * 이미 신청한 경우
+   * → 수정
+   */
+
+  if (existing) {
+
+    const old =
+      existing.row;
+
+
+    const updatedRow = [
+
+      old[0],
+
+      old[1],
+
+      name || old[2],
+
+      old[3],
+
+      type,
+
+      old[5],
+
+      old[6],
+
+      "ACTIVE"
+
+    ];
+
+
+    await updateApplication(
+
+      existing.rowNumber,
+
+      updatedRow
+
+    );
+
+
+    return {
+
+      action: "UPDATE",
+
+      message:
+        `${dayInfo.date} 신청을 ${type === "EARLY" ? "일찍" : "늦게"}으로 변경했습니다.`
+
+    };
+
+  }
+
+
+  /*
+   * 신규 신청
+   */
+
+  const applicationId =
+    `${Date.now()}-${userId}`;
+
+
   const row = [
 
-    old.id,
+    applicationId,
 
-    old.weekStart,
+    userId,
 
-    old.userId,
+    name || "",
 
-    old.name,
+    dayInfo.date,
 
-    values.monday,
+    type,
 
-    values.wednesday,
-
-    values.friday,
-
-    "ACTIVE",
-
-    old.createdAt,
+    week.weekStart,
 
     now,
 
-    ""
+    "ACTIVE"
 
   ];
 
 
-  await updateApplication(
-    existing.rowNumber,
+  await appendApplication(
     row
   );
 
 
-  return row;
+  return {
+
+    action: "INSERT",
+
+    message:
+      `${dayInfo.date} ${type === "EARLY" ? "일찍" : "늦게"} 신청이 저장되었습니다.`
+
+  };
 
 }
-export async function saveWorkApplication({
+/**
+ * 신청 취소
+ */
+export async function cancelWorkApplication({
+
   userId,
-  day,
-  type
+
+  day
+
 }) {
 
   const week =
-    getNextWeekInfo();
+    getApplicationWeek();
 
 
   const dayInfo =
@@ -343,43 +253,87 @@ export async function saveWorkApplication({
   }
 
 
+  /*
+   * 마감 확인
+   */
+
   if (!dayInfo.available) {
 
     throw new Error(
-      `${dayInfo.date} 신청이 마감되었습니다.`
+      `${dayInfo.date} 취소 가능 시간이 지났습니다.`
     );
 
   }
 
 
-  const applicationId =
-    Date.now().toString();
+  /*
+   * 기존 신청 조회
+   */
+
+  const existing =
+    await findApplication(
+
+      userId,
+
+      dayInfo.date
+
+    );
 
 
-  const row = [
+  if (!existing) {
 
-    applicationId,
+    throw new Error(
+      `${dayInfo.date} 신청내역이 없습니다.`
+    );
 
-    userId,
+  }
 
-    "",
 
-    dayInfo.date,
+  const old =
+    existing.row;
 
-    type,
 
-    week.weekStart,
+  /*
+   * CANCEL 상태로 변경
+   */
 
-    new Date().toISOString(),
+  const updatedRow = [
 
-    "ACTIVE"
+    old[0],
+
+    old[1],
+
+    old[2],
+
+    old[3],
+
+    old[4],
+
+    old[5],
+
+    old[6],
+
+    "CANCEL"
 
   ];
 
 
-  await appendApplication(row);
+  await updateApplication(
+
+    existing.rowNumber,
+
+    updatedRow
+
+  );
 
 
-  return row;
+  return {
 
-} 
+    action: "CANCEL",
+
+    message:
+      `${dayInfo.date} 신청을 취소했습니다.`
+
+  };
+
+}
