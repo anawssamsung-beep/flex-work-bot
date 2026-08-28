@@ -3,8 +3,7 @@ import {
   formatDate,
   getNextMonday,
   isApplyAvailable,
-  getKoreaDateTimeString,
-  getNextWeekInfo
+  getKoreaDateTimeString, 
 } from "../utils/dateUtils.js";
 
 import {
