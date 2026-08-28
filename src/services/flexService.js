@@ -3,7 +3,8 @@ import {
   formatDate,
   getNextMonday,
   isApplyAvailable,
-  getKoreaDateTimeString
+  getKoreaDateTimeString,
+  getNextWeekInfo
 } from "../utils/dateUtils.js";
 
 import {
@@ -320,3 +321,66 @@ export async function cancelDay({
   return row;
 
 }
+export async function saveWorkApplication({
+  userId,
+  day,
+  type
+}) {
+
+  const week =
+    getNextWeekInfo();
+
+
+  const dayInfo =
+    week[day];
+
+
+  if (!dayInfo) {
+
+    throw new Error(
+      "잘못된 근무일입니다."
+    );
+
+  }
+
+
+  if (!dayInfo.available) {
+
+    throw new Error(
+      `${dayInfo.date} 신청이 마감되었습니다.`
+    );
+
+  }
+
+
+  const applicationId =
+    Date.now().toString();
+
+
+  const row = [
+
+    applicationId,
+
+    userId,
+
+    "",
+
+    dayInfo.date,
+
+    type,
+
+    week.weekStart,
+
+    new Date().toISOString(),
+
+    "ACTIVE"
+
+  ];
+
+
+  await appendApplication(row);
+
+
+  return row;
+
+} 
