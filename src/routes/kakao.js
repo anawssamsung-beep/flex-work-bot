@@ -466,43 +466,34 @@ function createDayCard(
     buttons: [
 
       {
-
-        action:
-          "message",
-
-        label:
-          "🟢 일찍",
-
-        messageText:
-          `${day} EARLY`
-
-      },
+        action: "block",
+        label: "🟢 일찍",
+        blockId: "탄력근무신청",
+        extra: {
+            day: day,
+            type: "EARLY"
+        }
+        },
 
       {
-
-        action:
-          "message",
-
-        label:
-          "🔵 늦게",
-
-        messageText:
-          `${day} LATE`
-
-      },
+  action: "block",
+  label: "🔵 늦게",
+  blockId: "탄력근무신청",
+  extra: {
+    day: day,
+    type: "LATE"
+  }
+},
 
       {
-
-        action:
-          "message",
-
-        label:
-          "❌ 취소",
-
-        messageText:
-          `${day} CANCEL`
-
-      }
+  action: "block",
+  label: "❌ 취소",
+  blockId: "탄력근무신청",
+  extra: {
+    day: day,
+    type: "CANCEL"
+  }
+}
 
     ]
 
