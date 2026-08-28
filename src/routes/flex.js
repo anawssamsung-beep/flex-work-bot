@@ -3,7 +3,7 @@ import express from "express";
 import {
   getNextWeekInfo,
   saveApplication,
-  cancelDay
+  cancelWorkApplication
 } from "../services/flexService.js";
 
 import {
@@ -106,7 +106,7 @@ router.post(
     try {
 
       const result =
-        await cancelDay(req.body);
+        await cancelWorkApplication(req.body);
 
       res.json({
         success: true,
