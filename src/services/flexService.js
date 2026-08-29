@@ -1,7 +1,8 @@
 import {
   appendApplication,
   findApplication,
-  updateApplication
+  updateApplication,
+  getUpcomingApplications
 } from "./googleSheetService.js";
 
 
@@ -388,5 +389,39 @@ function getTypeName(type) {
   return type === "EARLY"
     ? "일찍"
     : "늦게";
+
+}
+export async function getUpcomingWorkApplications() {
+
+  const rows =
+    await getUpcomingApplications();
+
+  return rows.map(row => ({
+
+    applicationId:
+      row[0],
+
+    userId:
+      row[1],
+
+    name:
+      row[2],
+
+    workDate:
+      row[3],
+
+    type:
+      row[4],
+
+    weekStart:
+      row[5],
+
+    updatedAt:
+      row[6],
+
+    status:
+      row[7]
+
+  }));
 
 }

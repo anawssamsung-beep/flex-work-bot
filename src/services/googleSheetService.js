@@ -200,3 +200,52 @@ export async function updateApplication(
   });
 
 }
+/**
+ * 오늘 포함 이후 신청 현황 조회
+ */
+/**
+ * 오늘 포함 신청 현황 조회
+ */
+export async function getUpcomingApplications() {
+
+  const rows =
+    await getApplications();
+
+  if (rows.length <= 1) {
+    return [];
+  }
+
+  const today =
+    new Date()
+      .toLocaleDateString(
+        "sv-SE",
+        {
+          timeZone: "Asia/Seoul"
+        }
+      );
+
+  return rows
+    .slice(1)
+    .filter(row => {
+
+      const workDate =
+        row[3] || "";
+
+      const status =
+        row[7] || "";
+
+      if (
+        !workDate ||
+        status !== "ACTIVE"
+      ) {
+        return false;
+      }
+
+      return workDate >= today;
+
+    })
+    .sort((a, b) =>
+      a[3].localeCompare(b[3])
+    );
+
+}

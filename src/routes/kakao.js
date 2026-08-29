@@ -3,7 +3,8 @@ import express from "express";
 
 import {
     saveWorkApplication,
-    cancelWorkApplication
+    cancelWorkApplication,
+    getUpcomingWorkApplications
 } from "../services/flexService.js";
 import {
     getApplicationWeek
@@ -394,7 +395,12 @@ function createApplicationCard() {
                             "basicCard",
 
                         items: [
-
+                            {
+                                action: "block",
+                                label: "📋 신청 현황",
+                                blockId:
+                                    process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                            },
                             createDayCard(
                                 `월요일 (${formatDate(week.monday.date)})`,
                                 "monday"
@@ -556,5 +562,166 @@ function simpleText(text) {
 
 }
 
+/**
+ * 신청 현황 조회 Skill
+ */
+router.post(
+    "/applications",
+    async (req, res) => {
 
+        try {
+
+            console.log(
+                "========== KAKAO APPLICATIONS =========="
+            );
+
+            const applications =
+                await getUpcomingWorkApplications();
+
+            if (!applications.length) {
+
+                return res.json(
+                    simpleText(
+                        "📋 신청된 탄력근무 내역이 없습니다."
+                    )
+                );
+
+            }
+
+            return res.json(
+                simpleText(
+                    createApplicationListText(
+                        applications
+                    )
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Kakao Applications Error:",
+                error
+            );
+
+            return res.json(
+                simpleText(
+                    `⚠️ ${error.message}`
+                )
+            );
+
+        }
+
+    }
+);
+/**
+ * 신청 현황 텍스트
+ */
+function createApplicationListText(
+    applications
+) {
+
+    const grouped = {};
+
+    applications.forEach(
+        application => {
+
+            const date =
+                application.workDate;
+
+            if (!grouped[date]) {
+                grouped[date] = [];
+            }
+
+            grouped[date].push(
+                application
+            );
+
+        }
+    );
+
+
+    const lines = [
+        "📋 신청 현황",
+        ""
+    ];
+
+
+    Object.keys(grouped)
+        .sort()
+        .forEach(date => {
+
+            lines.push(
+                formatWorkDate(date)
+            );
+
+            grouped[date].forEach(
+                application => {
+
+                    lines.push(
+
+                        `${application.name}  ` +
+                        `${getTypeEmoji(application.type)} ` +
+                        `${getTypeName(application.type)}`
+
+                    );
+
+                }
+            );
+
+            lines.push("");
+
+        });
+
+
+    return lines.join("\n");
+
+}
+function formatWorkDate(date) {
+
+    const parts =
+        date.split("-");
+
+    const month =
+        Number(parts[1]);
+
+    const day =
+        Number(parts[2]);
+
+    const dateObject =
+        new Date(
+            Number(parts[0]),
+            month - 1,
+            day
+        );
+
+    const dayNames = [
+        "일",
+        "월",
+        "화",
+        "수",
+        "목",
+        "금",
+        "토"
+    ];
+
+    return (
+        `${month}/${day} ` +
+        `${dayNames[dateObject.getDay()]}요일`
+    );
+
+}
+function getTypeEmoji(type) {
+
+    return type === "EARLY"
+        ? "🚀"
+        : "🛵";
+
+}
+function getTypeName(type) {
+
+    return type === "EARLY"
+        ? "일찍"
+        : "늦게";
+
+}
 export default router;
