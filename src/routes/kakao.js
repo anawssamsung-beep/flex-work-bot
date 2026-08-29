@@ -25,9 +25,9 @@ router.post(
     async (req, res) => {
 
         try {
-
+            const chatRoomId = req.body.userRequest.chatId;
             console.log(
-                "========== KAKAO =========="
+                "========== KAKAO ==========:"+chatRoomId
             );
 
             console.log(
