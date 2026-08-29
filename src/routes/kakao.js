@@ -396,8 +396,8 @@ function createApplicationCard() {
 
                         items: [
                             {
-                                title: "탄력근무 신청",
-                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n*이창은 모든 직원이 신청 가능합니다.",
+                                title: "탄력근무 신청하기",
+                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n\nℹ️이창은 모든 직원이 동시 신청 가능합니다.\n매주 금요일 부터 차주 근무일자로 변경됩니다.",
                                 buttons: [                                    
                                     {
                                         action: "block",
@@ -468,7 +468,7 @@ function createDayCard(
             dayName,
 
         description:
-            "근무시간을 선택하세요.",
+            "근무유형을 선택하세요.",
 
         buttons: [
 
@@ -651,7 +651,7 @@ function createApplicationListText(
 
 
     const lines = [
-        `📋 신청 현황(${formatDate(week.monday.date)}~${formatDate(week.friday.date)})`,
+        `📋 근무 신청 현황`,
         ""
     ];
 
@@ -716,7 +716,7 @@ function formatWorkDate(date) {
 
     return (
         `${dayNames[dateObject.getDay()]}요일`
-        +`(${month}-${day})`
+        +`(${month}.${day})`
     );
 
 }
