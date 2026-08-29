@@ -372,6 +372,9 @@ router.post(
  */
 function createApplicationCard() {
 
+    const week =
+        getApplicationWeek();
+
     return {
 
         version:
@@ -391,17 +394,17 @@ function createApplicationCard() {
                         items: [
 
                             createDayCard(
-                                "월요일",
+                                `월요일 (${formatDate(week.monday.date)})`,
                                 "monday"
                             ),
 
                             createDayCard(
-                                "수요일",
+                                `수요일 (${formatDate(week.wednesday.date)})`,
                                 "wednesday"
                             ),
 
                             createDayCard(
-                                "금요일",
+                                `금요일 (${formatDate(week.friday.date)})`,
                                 "friday"
                             )
 
@@ -418,7 +421,18 @@ function createApplicationCard() {
     };
 
 }
+function formatDate(date) {
 
+    if (!date) {
+        return "";
+    }
+
+    const parts =
+        date.split("-");
+
+    return `${parts[1]}-${parts[2]}`;
+
+}
 
 /**
  * 요일 카드
@@ -442,7 +456,7 @@ function createDayCard(
                 action: "block",
 
                 label:
-                    "🚀 일찍 출근",
+                    "🚀 일찍 출근 Early",
 
                 blockId:
                     process.env.KAKAO_APPLY_BLOCK_ID,
@@ -463,7 +477,7 @@ function createDayCard(
                 action: "block",
 
                 label:
-                    "🛵 늦게 출근",
+                    "🛵 늦게 출근 Late",
 
                 blockId:
                     process.env.KAKAO_APPLY_BLOCK_ID,
