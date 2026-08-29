@@ -2,7 +2,8 @@ import {
   appendApplication,
   findApplication,
   updateApplication,
-  getUpcomingApplications
+  getUpcomingApplications,
+  findEmployeeName
 } from "./googleSheetService.js";
 
 
@@ -31,6 +32,16 @@ const TYPE_MAP = {
 
 };
 
+const employeeName =
+  await findEmployeeName(userId);
+
+if (!employeeName) {
+
+  throw new Error(
+    "등록된 사용자 정보를 찾을 수 없습니다."
+  );
+
+}
 
 /**
  * 탄력근무 신청
@@ -38,8 +49,6 @@ const TYPE_MAP = {
 export async function saveWorkApplication({
 
   userId,
-
-  name,
 
   day,
 
@@ -161,7 +170,7 @@ export async function saveWorkApplication({
 
       old[1],              // 사용자ID
 
-      name || old[2],      // 이름
+      employeeName || old[2],      // 이름
 
       old[3],              // 근무일
 
@@ -214,7 +223,7 @@ export async function saveWorkApplication({
 
     userId,
 
-    name || "",
+    employeeName || "",
 
     dayInfo.date,
 
@@ -248,6 +257,7 @@ export async function saveWorkApplication({
   };
 
 }
+
 
 
 /**

@@ -56,7 +56,8 @@ const spreadsheetId =
 
 const APPLICATION_RANGE =
   "신청!A:H";
-
+const EMPLOYEE_RANGE =
+  "직원!A:C";
 
 /**
  * 신청내역 전체 조회
@@ -247,5 +248,61 @@ export async function getUpcomingApplications() {
     .sort((a, b) =>
       a[3].localeCompare(b[3])
     );
+
+}
+export async function findEmployeeName(
+  userId
+) {
+
+  const result =
+    await sheets.spreadsheets.values.get({
+
+      spreadsheetId,
+
+      range:
+        EMPLOYEE_RANGE
+
+    });
+
+
+  const rows =
+    result.data.values || [];
+
+
+  for (
+    let i = 1;
+    i < rows.length;
+    i++
+  ) {
+
+    const row =
+      rows[i];
+
+
+    const rowUserId =
+      row[0] || "";
+
+
+    const name =
+      row[1] || "";
+
+
+    const enabled =
+      row[2] || "Y";
+
+
+    if (
+      rowUserId === userId &&
+      enabled === "Y"
+    ) {
+
+      return name;
+
+    }
+
+  }
+
+
+  return null;
 
 }
