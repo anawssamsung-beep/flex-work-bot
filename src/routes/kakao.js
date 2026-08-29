@@ -394,7 +394,7 @@ function createApplicationCard() {
                                         action: "block",
                                         label: "📋 금주 신청 현황",
                                         blockId: process.env.KAKAO_APPLICATIONS_BLOCK_ID,
-                                        messageText: ""
+                                        messageText: "1"
                                     },
                                     {
                                         action: "webLink",
