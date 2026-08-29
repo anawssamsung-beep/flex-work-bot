@@ -726,7 +726,7 @@ function getTypeName(type) {
 
     return type === "EARLY"
         ? "일찍"
-        : "늦게";
+        : "늦게" + type;
 
 }
 export default router;
