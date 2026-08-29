@@ -396,11 +396,18 @@ function createApplicationCard() {
 
                         items: [
                             {
-                                action: "block",
-                                label: "📋 신청 현황",
-                                blockId:
-                                    process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                                title: "근무현황 보기",
+                                description: "금주현황입니다.",
+                                buttons: [                                    
+                                    {
+                                        action: "block",
+                                        label: "📋 신청 현황",
+                                        blockId:
+                                            process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                                    },
+                                ],
                             },
+                            
                             createDayCard(
                                 `월요일 (${formatDate(week.monday.date)})`,
                                 "monday"
@@ -480,7 +487,6 @@ function createDayCard(
                 }
 
             },
-
             {
                 action: "block",
 
@@ -501,7 +507,6 @@ function createDayCard(
                 }
 
             },
-
             {
                 action: "block",
 
