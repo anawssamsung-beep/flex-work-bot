@@ -32,16 +32,6 @@ const TYPE_MAP = {
 
 };
 
-const employeeName =
-  await findEmployeeName(userId);
-
-if (!employeeName) {
-
-  throw new Error(
-    "등록된 사용자 정보를 찾을 수 없습니다."
-  );
-
-}
 
 /**
  * 탄력근무 신청
@@ -56,6 +46,16 @@ export async function saveWorkApplication({
 
 }) {
 
+  const employeeName =
+  await findEmployeeName(userId);
+
+  if (!employeeName) {
+
+    throw new Error(
+      "등록된 사용자 정보를 찾을 수 없습니다."
+    );
+
+  }
   /*
    * 사용자 확인
    */

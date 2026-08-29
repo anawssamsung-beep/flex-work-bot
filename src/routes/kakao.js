@@ -186,15 +186,6 @@ router.post(
 
                     userId,
 
-                    /*
-                     * 현재는 테스트용
-                     *
-                     * 나중에 직원 Sheet에서
-                     * userId → 이름 조회
-                     */
-                    name:
-                        "테스트사용자",
-
                     day,
 
                     type
