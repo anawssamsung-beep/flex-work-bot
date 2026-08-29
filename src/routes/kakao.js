@@ -397,7 +397,7 @@ function createApplicationCard() {
                         items: [
                             {
                                 title: "탄력근무 신청",
-                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n/다운로드 : 당월다운로드\n*이창은 모든 직원이 신청 가능합니다.",
+                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n*이창은 모든 직원이 신청 가능합니다.",
                                 buttons: [                                    
                                     {
                                         action: "block",
@@ -406,10 +406,9 @@ function createApplicationCard() {
                                             process.env.KAKAO_APPLICATIONS_BLOCK_ID
                                     },
                                     {
-                                        action: "block",
-                                        label: "📋 월간내역다운",
-                                        blockId:
-                                            process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                                        action: "webLink",
+                                        label: "🈷️ 스프래드시트 보기",
+                                        webLinkUrl:"https://docs.google.com/spreadsheets/d/1hf2Y_8b5YBYwNnPhxuaUxdUe6kJ6e11ibDpmRkC1ctE/edit?usp=sharing"
                                     }                                   
                                 ],
                             },
@@ -652,7 +651,7 @@ function createApplicationListText(
 
 
     const lines = [
-        "📋 신청 현황",
+        `📋 신청 현황(${formatDate(week.monday.date)}~${formatDate(week.friday.date)})`,
         ""
     ];
 
@@ -716,8 +715,8 @@ function formatWorkDate(date) {
     ];
 
     return (
-        `${month}/${day} ` +
         `${dayNames[dateObject.getDay()]}요일`
+        +`(${month}-${day})`
     );
 
 }
