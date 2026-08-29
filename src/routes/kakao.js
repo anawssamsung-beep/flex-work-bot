@@ -396,15 +396,21 @@ function createApplicationCard() {
 
                         items: [
                             {
-                                title: "근무현황 보기",
-                                description: "금주현황입니다.",
+                                title: "탄력근무 신청",
+                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n/다운로드 : 당월다운로드\n*이창은 모든 직원이 신청 가능합니다.",
                                 buttons: [                                    
                                     {
                                         action: "block",
-                                        label: "📋 신청 현황",
+                                        label: "📋 금주 신청 현황",
                                         blockId:
                                             process.env.KAKAO_APPLICATIONS_BLOCK_ID
                                     },
+                                    {
+                                        action: "block",
+                                        label: "📋 월간내역다운",
+                                        blockId:
+                                            process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                                    }                                   
                                 ],
                             },
                             
