@@ -725,8 +725,8 @@ function getTypeEmoji(type) {
 function getTypeName(type) {
 
     return type === "EARLY"
-        ? "일찍"
-        : "늦게" + type;
+        ? "일찍 Early"
+        : "늦게 Late";
 
 }
 export default router;
