@@ -393,8 +393,8 @@ function createApplicationCard() {
                                     {
                                         action: "block",
                                         label: "📋 금주 신청 현황",
-                                        blockId:
-                                            process.env.KAKAO_APPLICATIONS_BLOCK_ID
+                                        blockId: process.env.KAKAO_APPLICATIONS_BLOCK_ID,
+                                        messageText: ""
                                     },
                                     {
                                         action: "webLink",
@@ -480,7 +480,8 @@ function createDayCard(
                     type:
                         "EARLY"
 
-                }
+                },
+                messageText: ""
 
             },
             {
@@ -500,7 +501,8 @@ function createDayCard(
                     type:
                         "LATE"
 
-                }
+                },
+                messageText: ""
 
             },
             {
@@ -520,7 +522,8 @@ function createDayCard(
                     type:
                         "CANCEL"
 
-                }
+                },
+                messageText: ""
 
             }
 

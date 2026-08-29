@@ -46,8 +46,7 @@ export async function saveWorkApplication({
 
 }) {
 
-  const employeeName =
-  await findEmployeeName(userId);
+  const employeeName = await findEmployeeName(userId);
 
   if (!employeeName) {
 
