@@ -2,396 +2,369 @@ import express from "express";
 
 
 import {
-  saveWorkApplication,
-  cancelWorkApplication
+    saveWorkApplication,
+    cancelWorkApplication
 } from "../services/flexService.js";
 
 
 const router =
-  express.Router();
+    express.Router();
 
 
 /**
  * 카카오 Webhook
+ *
+ * 일반적으로 "탄력근무 신청"을 입력했을 때
+ * 신청 카드를 보여준다.
  */
 router.post(
-  "/webhook",
-  async (req, res) => {
+    "/webhook",
+    async (req, res) => {
 
-    try {
+        try {
 
-      console.log(
-        "========== KAKAO =========="
-      );
+            console.log(
+                "========== KAKAO =========="
+            );
 
+            console.log(
+                JSON.stringify(
+                    req.body,
+                    null,
+                    2
+                )
+            );
 
-      console.log(
-        JSON.stringify(
-          req.body,
-          null,
-          2
-        )
-      );
 
+            /*
+             * 카카오 사용자 ID
+             */
+            const userId =
+                req.body
+                    ?.userRequest
+                    ?.user
+                    ?.id;
 
-      /*
-       * 카카오 사용자 ID
-       */
 
-      const userId =
-        req.body
-          ?.userRequest
-          ?.user
-          ?.id;
+            console.log(
+                "userId:",
+                userId
+            );
 
 
-      /*
-       * 사용자가 입력한 메시지
-       */
+            /*
+             * 신청 카드
+             */
+            return res.json(
+                createApplicationCard()
+            );
 
-      const utterance =
-        req.body
-          ?.userRequest
-          ?.utterance;
 
+        } catch (error) {
 
-      console.log(
-        "userId:",
-        userId
-      );
+            console.error(
+                "Kakao Webhook Error:",
+                error
+            );
 
 
-      console.log(
-        "utterance:",
-        utterance
-      );
+            return res.json(
+                simpleText(
+                    `⚠️ ${error.message}`
+                )
+            );
 
-
-      /*
-       * 사용자 ID 확인
-       */
-
-      if (!userId) {
-
-        return res.json(
-
-          simpleText(
-            "사용자 정보를 확인할 수 없습니다."
-          )
-
-        );
-
-      }
-
-
-      /*
-       * 버튼 선택 분석
-       */
-
-      const selection =
-        parseSelection(
-          utterance
-        );
-
-
-      /*
-       * 일반 메시지
-       *
-       * → 신청 카드
-       */
-
-      if (!selection) {
-
-        return res.json(
-
-          createApplicationCard()
-
-        );
-
-      }
-
-
-      /*
-       * 취소
-       */
-
-      if (
-        selection.type ===
-        "CANCEL"
-      ) {
-
-        const result =
-          await cancelWorkApplication({
-
-            userId,
-
-            day:
-              selection.day
-
-          });
-
-
-        return res.json(
-
-          simpleText(
-
-            `❌ ${result.message}`
-
-          )
-
-        );
-
-      }
-
-
-      /*
-       * 신청
-       */
-
-      const result =
-        await saveWorkApplication({
-
-          userId,
-
-          /*
-           * 현재는 테스트용
-           *
-           * 나중에 직원 Sheet에서
-           * userId → 이름 조회
-           */
-
-          name:
-            "테스트사용자",
-
-          day:
-            selection.day,
-
-          type:
-            selection.type
-
-        });
-
-
-      return res.json(
-
-        simpleText(
-
-          `✅ ${result.message}`
-
-        )
-
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Kakao Webhook Error:",
-        error
-      );
-
-
-      return res.json(
-
-        simpleText(
-
-          `⚠️ ${error.message}`
-
-        )
-
-      );
+        }
 
     }
-
-  }
 );
 
 
 /**
- * 버튼 메시지 분석
+ * 탄력근무 신청 Skill
  */
-function parseSelection(text) {
+router.post(
+    "/apply",
+    async (req, res) => {
 
-  if (!text) {
+        try {
 
-    return null;
+            console.log(
+                "========== KAKAO APPLY =========="
+            );
 
-  }
+            console.log(
+                JSON.stringify(
+                    req.body,
+                    null,
+                    2
+                )
+            );
 
 
-  const values = {
+            /*
+             * 카카오 사용자 ID
+             */
+            const userId =
+                req.body
+                    ?.userRequest
+                    ?.user
+                    ?.id;
 
 
-    /*
-     * 월요일
-     */
+            /*
+             * 버튼에서 전달한 정보
+             */
+            const clientExtra =
+                req.body
+                    ?.action
+                    ?.clientExtra;
 
-    "monday EARLY": {
 
-      day:
-        "monday",
+            const day =
+                clientExtra
+                    ?.day;
 
-      dayName:
-        "월요일",
 
-      type:
-        "EARLY",
+            const type =
+                clientExtra
+                    ?.type;
 
-      typeName:
-        "일찍"
 
-    },
+            console.log(
+                "userId:",
+                userId
+            );
 
+            console.log(
+                "day:",
+                day
+            );
 
-    "monday LATE": {
+            console.log(
+                "type:",
+                type
+            );
 
-      day:
-        "monday",
 
-      dayName:
-        "월요일",
+            /*
+             * 사용자 ID 확인
+             */
+            if (!userId) {
 
-      type:
-        "LATE",
+                return res.json(
+                    simpleText(
+                        "사용자 정보를 확인할 수 없습니다."
+                    )
+                );
 
-      typeName:
-        "늦게"
+            }
 
-    },
 
+            /*
+             * 신청 정보 확인
+             */
+            if (!day || !type) {
 
-    "monday CANCEL": {
+                return res.json(
+                    simpleText(
+                        "신청 정보를 확인할 수 없습니다."
+                    )
+                );
 
-      day:
-        "monday",
+            }
 
-      dayName:
-        "월요일",
 
-      type:
-        "CANCEL",
+            /*
+             * 신청 처리
+             */
+            const result =
+                await saveWorkApplication({
 
-      typeName:
-        "취소"
+                    userId,
 
-    },
+                    /*
+                     * 현재는 테스트용
+                     *
+                     * 나중에 직원 Sheet에서
+                     * userId → 이름 조회
+                     */
+                    name:
+                        "테스트사용자",
 
+                    day,
 
-    /*
-     * 수요일
-     */
+                    type
 
-    "wednesday EARLY": {
+                });
 
-      day:
-        "wednesday",
 
-      dayName:
-        "수요일",
+            return res.json(
 
-      type:
-        "EARLY",
+                simpleText(
 
-      typeName:
-        "일찍"
+                    `✅ ${result.message}`
 
-    },
+                )
 
+            );
 
-    "wednesday LATE": {
 
-      day:
-        "wednesday",
+        } catch (error) {
 
-      dayName:
-        "수요일",
+            console.error(
+                "Kakao Apply Error:",
+                error
+            );
 
-      type:
-        "LATE",
 
-      typeName:
-        "늦게"
+            return res.json(
 
-    },
+                simpleText(
 
+                    `⚠️ ${error.message}`
 
-    "wednesday CANCEL": {
+                )
 
-      day:
-        "wednesday",
+            );
 
-      dayName:
-        "수요일",
-
-      type:
-        "CANCEL",
-
-      typeName:
-        "취소"
-
-    },
-
-
-    /*
-     * 금요일
-     */
-
-    "friday EARLY": {
-
-      day:
-        "friday",
-
-      dayName:
-        "금요일",
-
-      type:
-        "EARLY",
-
-      typeName:
-        "일찍"
-
-    },
-
-
-    "friday LATE": {
-
-      day:
-        "friday",
-
-      dayName:
-        "금요일",
-
-      type:
-        "LATE",
-
-      typeName:
-        "늦게"
-
-    },
-
-
-    "friday CANCEL": {
-
-      day:
-        "friday",
-
-      dayName:
-        "금요일",
-
-      type:
-        "CANCEL",
-
-      typeName:
-        "취소"
+        }
 
     }
+);
 
-  };
+
+/**
+ * 탄력근무 취소 Skill
+ */
+router.post(
+    "/cancel",
+    async (req, res) => {
+
+        try {
+
+            console.log(
+                "========== KAKAO CANCEL =========="
+            );
+
+            console.log(
+                JSON.stringify(
+                    req.body,
+                    null,
+                    2
+                )
+            );
 
 
-  return values[text] || null;
+            /*
+             * 카카오 사용자 ID
+             */
+            const userId =
+                req.body
+                    ?.userRequest
+                    ?.user
+                    ?.id;
 
-}
+
+            /*
+             * 버튼에서 전달한 정보
+             */
+            const clientExtra =
+                req.body
+                    ?.action
+                    ?.clientExtra;
+
+
+            const day =
+                clientExtra
+                    ?.day;
+
+
+            console.log(
+                "userId:",
+                userId
+            );
+
+            console.log(
+                "day:",
+                day
+            );
+
+
+            /*
+             * 사용자 ID 확인
+             */
+            if (!userId) {
+
+                return res.json(
+                    simpleText(
+                        "사용자 정보를 확인할 수 없습니다."
+                    )
+                );
+
+            }
+
+
+            /*
+             * 근무일 확인
+             */
+            if (!day) {
+
+                return res.json(
+                    simpleText(
+                        "취소할 근무일을 확인할 수 없습니다."
+                    )
+                );
+
+            }
+
+
+            /*
+             * 취소 처리
+             */
+            const result =
+                await cancelWorkApplication({
+
+                    userId,
+
+                    day
+
+                });
+
+
+            return res.json(
+
+                simpleText(
+
+                    `❌ ${result.message}`
+
+                )
+
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Kakao Cancel Error:",
+                error
+            );
+
+
+            return res.json(
+
+                simpleText(
+
+                    `⚠️ ${error.message}`
+
+                )
+
+            );
+
+        }
+
+    }
+);
 
 
 /**
@@ -399,50 +372,50 @@ function parseSelection(text) {
  */
 function createApplicationCard() {
 
-  return {
+    return {
 
-    version:
-      "2.0",
+        version:
+            "2.0",
 
-    template: {
+        template: {
 
-      outputs: [
+            outputs: [
 
-        {
+                {
 
-          carousel: {
+                    carousel: {
 
-            type:
-              "basicCard",
+                        type:
+                            "basicCard",
 
-            items: [
+                        items: [
 
-              createDayCard(
-                "월요일",
-                "monday"
-              ),
+                            createDayCard(
+                                "월요일",
+                                "monday"
+                            ),
 
-              createDayCard(
-                "수요일",
-                "wednesday"
-              ),
+                            createDayCard(
+                                "수요일",
+                                "wednesday"
+                            ),
 
-              createDayCard(
-                "금요일",
-                "friday"
-              )
+                            createDayCard(
+                                "금요일",
+                                "friday"
+                            )
+
+                        ]
+
+                    }
+
+                }
 
             ]
 
-          }
-
         }
 
-      ]
-
-    }
-
-  };
+    };
 
 }
 
@@ -451,53 +424,86 @@ function createApplicationCard() {
  * 요일 카드
  */
 function createDayCard(
-  dayName,
-  day
+    dayName,
+    day
 ) {
 
-  return {
+    return {
 
-    title:
-      dayName,
+        title:
+            dayName,
 
-    description:
-      "근무시간을 선택하세요.",
+        description:
+            "근무시간을 선택하세요.",
 
-    buttons: [
+        buttons: [
 
-      {
-        action: "block",
-        label: "🟢 일찍",
-        blockId: "탄력근무신청",
-        extra: {
-            day: day,
-            type: "EARLY"
-        }
-        },
+            {
+                action: "block",
 
-      {
-  action: "block",
-  label: "🔵 늦게",
-  blockId: "탄력근무신청",
-  extra: {
-    day: day,
-    type: "LATE"
-  }
-},
+                label:
+                    "🚀 일찍 출근",
 
-      {
-  action: "block",
-  label: "❌ 취소",
-  blockId: "탄력근무신청",
-  extra: {
-    day: day,
-    type: "CANCEL"
-  }
-}
+                blockId:
+                    process.env.KAKAO_APPLY_BLOCK_ID,
 
-    ]
+                extra: {
 
-  };
+                    day:
+                        day,
+
+                    type:
+                        "EARLY"
+
+                }
+
+            },
+
+            {
+                action: "block",
+
+                label:
+                    "🛵 늦게 출근",
+
+                blockId:
+                    process.env.KAKAO_APPLY_BLOCK_ID,
+
+                extra: {
+
+                    day:
+                        day,
+
+                    type:
+                        "LATE"
+
+                }
+
+            },
+
+            {
+                action: "block",
+
+                label:
+                    "❌ 취소",
+
+                blockId:
+                    process.env.KAKAO_CANCEL_BLOCK_ID,
+
+                extra: {
+
+                    day:
+                        day,
+
+                    type:
+                        "CANCEL"
+
+                }
+
+            }
+
+        ]
+
+    };
 
 }
 
@@ -507,30 +513,30 @@ function createDayCard(
  */
 function simpleText(text) {
 
-  return {
+    return {
 
-    version:
-      "2.0",
+        version:
+            "2.0",
 
-    template: {
+        template: {
 
-      outputs: [
+            outputs: [
 
-        {
+                {
 
-          simpleText: {
+                    simpleText: {
 
-            text
+                        text
 
-          }
+                    }
+
+                }
+
+            ]
 
         }
 
-      ]
-
-    }
-
-  };
+    };
 
 }
 
