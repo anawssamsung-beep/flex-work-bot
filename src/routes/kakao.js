@@ -368,15 +368,15 @@ router.post(
 
     }
 );
-
+const week =
+        getApplicationWeek();
 
 /**
  * 신청 카드
  */
 function createApplicationCard() {
 
-    const week =
-        getApplicationWeek();
+    
 
     return {
 
