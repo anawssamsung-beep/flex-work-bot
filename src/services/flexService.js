@@ -93,7 +93,7 @@ export async function saveWorkApplication({ userId, day, type }) {
     
     if (!employee?.userName) {
         throw new Error(
-            "등록된 사용자 정보를 찾을 수 없습니다.\n@사원등록 \"이름\"을 입력해주세요."
+            "등록된 직원 정보를 찾을 수 없습니다.\n@사원 \"이름\"을 입력해주세요."
         );
     }
     /*

@@ -69,7 +69,7 @@ router.post(
                     )
                 );
             }
-            if (utterance.trim() === "@사원등록") {
+            if (utterance.trim() === "@사원" || utterance.trim() === "@사원등록") {
                 return res.json(
                     simpleText(
                         "⚠️ 이름을 입력해주세요"
@@ -266,8 +266,8 @@ function createApplicationCard() {
                         type: "basicCard",
                         items: [
                             {
-                                title: "탄력근무 신청하기",
-                                description: "@사용자 홍길동:사원등록\n@근무신청 : 입력창 열기\n@근무현황 : 금주 신청 내역\n\nℹ️이창은 모든 직원이 동시 신청 가능합니다.\n매주 금요일 부터 차주 근무일자로 변경됩니다.",
+                                title: "시간선택근무 신청하기",
+                                description: "@사원 홍길동 : 사원사용 등록\n@등록 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️매주 금요일 부터 차주 근무일자로 변경됩니다.",
                                 buttons: [
                                     {
                                         action: "block",
@@ -421,7 +421,7 @@ function createApplicationListText( applications ) {
         }
     );
     const lines = [
-        `📋 근무 신청 현황`,
+        `📋 시간선택근무 현황`,
         ""
     ];
 
