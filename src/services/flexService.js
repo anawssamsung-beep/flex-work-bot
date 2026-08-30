@@ -51,9 +51,9 @@ export async function saveUser({ userId,userName }) {
         //수정
 
         const updatedRow = [
-            employee.userId,             // 사용자ID
-            employee.userName,           // 이름
-            "Y",      // 이름
+            employee.userId,    // 사용자ID
+            userName,           // 이름
+            "Y",      
         ];
         await updateEmployee(
             employee.rowNumber,
