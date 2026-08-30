@@ -35,6 +35,22 @@ export async function saveUser({ userId,userName }) {
 
 
     const employee = await findEmployeeInfo(userId);
+    if (!employee) {
+        //신규    
+
+        const updatedRow = [
+            userId,             // 사용자ID
+            userName,           // 이름
+            "Y",      // 이름
+        ];
+        await appendEmployee(
+            updatedRow
+        );
+        return {
+            action: "INSERT",
+            message: `${userName}님 사용자등록이 완료 되었습니다.`
+        };
+    }
     console.log("employee.userId", employee.userId);
     console.log("employee.userName", employee.userName);
     console.log("employee.rowNumber", employee.rowNumber);
@@ -65,22 +81,7 @@ export async function saveUser({ userId,userName }) {
         };
 
     }
-    //신규    
-    if (!employee.userId) {
-
-        const updatedRow = [
-            employee.userId,             // 사용자ID
-            employee.userName,           // 이름
-            "Y",      // 이름
-        ];
-        await appendEmployee(
-            updatedRow
-        );
-        return {
-            action: "INSERT",
-            message: `${userName}님 사용자등록이 완료 되었습니다.`
-        };
-    }
+    
 
 /**
  * 탄력근무 신청

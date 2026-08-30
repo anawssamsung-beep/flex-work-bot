@@ -59,19 +59,27 @@ router.post(
              * 카카오 사용자 ID
              */
             const userId =req.body?.userRequest?.user?.id;
+            const utterance =req.body?.userRequest?.utterance;
             const userName =req.body?.action?.params?.userName;
 
             if (!userId) {
                 return res.json(
                     simpleText(
-                        "사용자 정보를 확인할 수 없습니다."
+                        "⚠️사용자 정보를 확인할 수 없습니다."
+                    )
+                );
+            }
+            if (utterance.trim() === "@사원등록") {
+                return res.json(
+                    simpleText(
+                        "⚠️이름을 입력해주세요"
                     )
                 );
             }
             if (!userName) {
                 return res.json(
                     simpleText(
-                        "이름을 입력해주세요"
+                        "⚠️등록된 직원이름이 아닙니다. 관리자에게 문의해주세요."
                     )
                 );
             }
