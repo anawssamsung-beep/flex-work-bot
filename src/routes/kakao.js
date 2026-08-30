@@ -325,6 +325,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "EARLY"
                 },
+                messageText: ""
             },
             {
                 action: "block",
@@ -334,6 +335,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "LATE"
                 },
+                messageText: ""
             },
             {
                 action: "block",
@@ -343,6 +345,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "CANCEL"
                 },
+                messageText: ""
             }
         ]
     };
