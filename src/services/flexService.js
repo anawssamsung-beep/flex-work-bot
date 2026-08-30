@@ -48,7 +48,7 @@ export async function saveUser({ userId,userName }) {
         );
         return {
             action: "INSERT",
-            message: `${userName}님 사용자등록이 완료 되었습니다.`
+            message: `${userName}님 사용등록이 완료 되었습니다.`
         };
     }
     console.log("employee.userId", employee.userId);
@@ -90,8 +90,8 @@ export async function saveUser({ userId,userName }) {
 export async function saveWorkApplication({ userId, day, type }) {
 
     const employee = await findEmployeeInfo(userId);
-
-    if (!employee.userName) {
+    
+    if (!employee?.userName) {
         throw new Error(
             "등록된 사용자 정보를 찾을 수 없습니다."
         );
