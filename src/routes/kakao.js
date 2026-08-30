@@ -271,9 +271,9 @@ function createApplicationCard() {
                                 buttons: [
                                     {
                                         action: "block",
-                                        label: "📋 금주 신청 현황",
+                                        label: "📋 금주신청 현황",
                                         blockId: process.env.KAKAO_APPLICATIONS_BLOCK_ID,
-                                        messageText: "📋 금주 신청 현황 조회"
+                                        messageText: "📋 금주 신청현황 조회"
                                     },
                                     {
                                         action: "webLink",
@@ -328,7 +328,7 @@ function createDayCard(dayName, day ,format) {
                     day: day,
                     type: "EARLY"
                 },
-                messageText: `${format} 🚀 일찍 출근 Early 등록`
+                messageText: `${format}일 🚀 일찍 출근 Early 등록`
             },
             {
                 action: "block",
@@ -338,7 +338,7 @@ function createDayCard(dayName, day ,format) {
                     day: day,
                     type: "LATE"
                 },
-                messageText: `${format} 🛵 늦게 출근 Late 등록`
+                messageText: `${format}일 🛵 늦게 출근 Late 등록`
             },
             {
                 action: "block",
@@ -348,7 +348,7 @@ function createDayCard(dayName, day ,format) {
                     day: day,
                     type: "CANCEL"
                 },
-                messageText: `${format} ❌ 취소 처리`
+                messageText: `${format}일 ❌ 취소 처리`
             }
         ]
     };

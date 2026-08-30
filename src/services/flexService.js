@@ -289,8 +289,8 @@ export async function cancelWorkApplication({userId, day}) {
 function getTypeName(type) {
 
     return type === "EARLY"
-        ? "일찍 Early"
-        : "늦게 Late";
+        ? "Early"
+        : "Late";
 
 }
 export async function getUpcomingWorkApplications() {
