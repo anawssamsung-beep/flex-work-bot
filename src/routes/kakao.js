@@ -1,6 +1,5 @@
 import express from "express";
 
-
 import {
     saveUser,
     saveWorkApplication,
@@ -12,6 +11,25 @@ import {
 } from "../utils/dateUtils.js";
 
 const router = express.Router();
+
+/**
+ * 카카오 Webhook
+ *
+ * 일반적으로 "탄력근무 신청"을 입력했을 때
+ * 신청 카드를 보여준다.
+ */
+router.get("/check",
+    async (req, res) => {
+        try {            
+            console.log("========== check ==========:");
+            return {ststus:"success"};
+        } catch (error) {
+            return {ststus:"success"};
+        }
+
+    }
+);
+
 
 /**
  * 카카오 Webhook
