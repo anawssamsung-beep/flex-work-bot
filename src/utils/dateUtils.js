@@ -160,13 +160,8 @@ export function isApplyAvailable(
  */
 export function getApplicationWeek() {
 
-    const now =
-        getKoreaNow();
-
-    const day =
-        now.getDay();
-
-
+    const now = getKoreaNow();
+    const day = now.getDay();
     /*
      * 금요일 / 토요일 / 일요일
      *
@@ -201,37 +196,15 @@ export function getApplicationWeek() {
 /**
  * 월 / 수 / 금 생성
  */
-function createWeekInfo(
-    monday
-) {
+function createWeekInfo(monday) {
 
-    const wednesday =
-        addDays(
-            monday,
-            2
-        );
-
-    const friday =
-        addDays(
-            monday,
-            4
-        );
-
-
+    const wednesday = addDays(monday,2);
+    const friday = addDays(monday,4);
     return {
-
-        weekStart:
-            formatDate(monday),
-
-        monday:
-            createDayInfo(monday),
-
-        wednesday:
-            createDayInfo(wednesday),
-
-        friday:
-            createDayInfo(friday)
-
+        weekStart: formatDate(monday),
+        monday: createDayInfo(monday),
+        wednesday: createDayInfo(wednesday),
+        friday: createDayInfo(friday)
     };
 
 }
@@ -240,23 +213,12 @@ function createWeekInfo(
 /**
  * 하루 정보
  */
-function createDayInfo(
-    date
-) {
-
+function createDayInfo(date) {
     return {
-
-        date:
-            formatDate(date),
-
-        deadline:
-            getDeadline(date),
-
-        available:
-            isApplyAvailable(date)
-
+        date: formatDate(date),
+        deadline: getDeadline(date),
+        available: isApplyAvailable(date)
     };
-
 }
 
 
@@ -264,38 +226,12 @@ function createDayInfo(
  * 현재 한국시간 문자열
  */
 export function getKoreaDateTimeString() {
-
-    const now =
-        getKoreaNow();
-
-    const yyyy =
-        now.getFullYear();
-
-    const mm =
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-    const dd =
-        String(
-            now.getDate()
-        ).padStart(2, "0");
-
-    const hh =
-        String(
-            now.getHours()
-        ).padStart(2, "0");
-
-    const mi =
-        String(
-            now.getMinutes()
-        ).padStart(2, "0");
-
-    const ss =
-        String(
-            now.getSeconds()
-        ).padStart(2, "0");
-
+    const now = getKoreaNow();
+    const yyyy = now.getFullYear();
+    const mm = String( now.getMonth() + 1 ).padStart(2, "0");
+    const dd = String( now.getDate() ).padStart(2, "0");
+    const hh = String( now.getHours() ).padStart(2, "0");
+    const mi = String( now.getMinutes() ).padStart(2, "0");
+    const ss = String( now.getSeconds() ).padStart(2, "0");
     return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
-
 }

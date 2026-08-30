@@ -191,6 +191,7 @@ export async function saveWorkApplication({ userId, day, type }) {
         now,
         "ACTIVE"
     ];
+    console.log(row);
     await appendApplication(
         row
     );
