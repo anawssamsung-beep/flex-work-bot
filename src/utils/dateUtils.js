@@ -165,7 +165,8 @@ export function getApplicationWeek() {
      */
     if (
         day === 5 ||
-        day === 6
+        day === 6 ||
+        day === 0
     ) {
 
         return createWeekInfo(
