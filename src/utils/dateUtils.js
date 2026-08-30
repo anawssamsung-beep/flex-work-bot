@@ -140,15 +140,11 @@ export function getDeadline(
 /**
  * 신청 가능 여부
  */
-export function isApplyAvailable(
-    workDate
-) {
+export function isApplyAvailable(workDate) {
 
-    const now =
-        getKoreaNow();
+    const now = getKoreaNow();
 
-    const deadline =
-        getDeadline(workDate);
+    const deadline = getDeadline(workDate);
 
     return now < deadline;
 
@@ -169,8 +165,7 @@ export function getApplicationWeek() {
      */
     if (
         day === 5 ||
-        day === 6 ||
-        day === 0
+        day === 6
     ) {
 
         return createWeekInfo(
