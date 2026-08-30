@@ -273,7 +273,7 @@ function createApplicationCard() {
                                         action: "block",
                                         label: "📋 금주 신청 현황",
                                         blockId: process.env.KAKAO_APPLICATIONS_BLOCK_ID,
-                                        messageText: ""
+                                        messageText: "📋 금주 신청 현황 조회"
                                     },
                                     {
                                         action: "webLink",
@@ -283,16 +283,19 @@ function createApplicationCard() {
                                 ],
                             },
                             createDayCard(
-                                `월요일 (${formatDate(week.monday.date)})`,
-                                "monday"
+                                `월요일`,
+                                "monday",
+                                `${formatDate(week.monday.date)}`
                             ),
                             createDayCard(
-                                `수요일 (${formatDate(week.wednesday.date)})`,
-                                "wednesday"
+                                `수요일`,
+                                "wednesday",
+                                `${formatDate(week.wednesday.date)}`
                             ),
                             createDayCard(
-                                `금요일 (${formatDate(week.friday.date)})`,
-                                "friday"
+                                `금요일`,
+                                "friday",
+                                `${formatDate(week.friday.date)}`
                             )
                         ]
                     }
@@ -312,9 +315,9 @@ function formatDate(date) {
 /**
  * 요일 카드
  */
-function createDayCard(dayName, day ) {
+function createDayCard(dayName, day ,format) {
     return {
-        title: dayName,
+        title: `${dayName} (${format})`,
         description: "근무유형을 선택하세요.",
         buttons: [
             {
@@ -325,7 +328,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "EARLY"
                 },
-                messageText: ""
+                messageText: `${format} 🚀 일찍 출근 Early 등록`
             },
             {
                 action: "block",
@@ -335,7 +338,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "LATE"
                 },
-                messageText: ""
+                messageText: `${format} 🛵 늦게 출근 Late 등록`
             },
             {
                 action: "block",
@@ -345,7 +348,7 @@ function createDayCard(dayName, day ) {
                     day: day,
                     type: "CANCEL"
                 },
-                messageText: ""
+                messageText: `${format} ❌ 취소 처리`
             }
         ]
     };

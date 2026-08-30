@@ -172,7 +172,7 @@ export async function saveWorkApplication({ userId, day, type }) {
         return {
             action: "UPDATE",
             message:
-                `✴️${dayInfo.date} 근무를 ` +
+                `❇️ ${dayInfo.date} 근무를 ` +
                 `${getTypeName(type)}로 변경했습니다.`
         };
     }
