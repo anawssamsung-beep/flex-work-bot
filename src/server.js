@@ -1,39 +1,31 @@
 import "dotenv/config";
 import express from "express";
+import kakaoRouter from "./routes/kakao.js";
 
-
-import kakaoRouter
-  from "./routes/kakao.js";
-
-
-
-
-const app =
-  express();
-
+const app = express();
 
 app.use(
-  express.json()
+    express.json()
 );
 
 
 app.use(
-  "/kakao",
-  kakaoRouter
+    "/kakao",
+    kakaoRouter
 );
 
 
 const PORT =
-  process.env.PORT || 3000;
+    process.env.PORT || 3000;
 
 
 app.listen(
-  PORT,
-  () => {
+    PORT,
+    () => {
 
-    console.log(
-      `Server running on port ${PORT}`
-    );
+        console.log(
+            `Server running on port ${PORT}`
+        );
 
-  }
+    }
 );

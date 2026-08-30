@@ -20,14 +20,13 @@ const router =
  * 일반적으로 "탄력근무 신청"을 입력했을 때
  * 신청 카드를 보여준다.
  */
-router.post(
-    "/webhook",
+router.post("/webhook",
     async (req, res) => {
 
         try {
             const chatRoomId = req.body.userRequest.chatId;
             console.log(
-                "========== KAKAO ==========:"+chatRoomId
+                "========== KAKAO ==========:" + chatRoomId
             );
 
             console.log(
@@ -75,6 +74,81 @@ router.post(
                 simpleText(
                     `⚠️ ${error.message}`
                 )
+            );
+
+        }
+
+    }
+);
+
+/**
+ * 탄력근무 신청 Skill
+ */
+router.post(
+    "/user",
+    async (req, res) => {
+
+        try {
+
+            console.log(
+                "========== KAKAO User ADD =========="
+            );
+
+            console.log(
+                JSON.stringify(
+                    req.body,
+                    null,
+                    2
+                )
+            );
+
+
+            /*
+             * 카카오 사용자 ID
+             */
+            const userId =
+                req.body
+                    ?.userRequest
+                    ?.user
+                    ?.id;
+
+
+            if (!userId) {
+
+                return res.json(
+                    simpleText(
+                        "사용자 정보를 확인할 수 없습니다."
+                    )
+                );
+
+            }
+
+
+
+                return res.json(
+                    simpleText(
+                        `신청 정보를 확인할 수 없습니다.${userId}`
+                    )
+                );
+
+
+
+        } catch (error) {
+
+            console.error(
+                "Kakao Apply Error:",
+                error
+            );
+
+
+            return res.json(
+
+                simpleText(
+
+                    `⚠️ ${error.message}`
+
+                )
+
             );
 
         }
@@ -360,14 +434,14 @@ router.post(
     }
 );
 const week =
-        getApplicationWeek();
+    getApplicationWeek();
 
 /**
  * 신청 카드
  */
 function createApplicationCard() {
 
-    
+
 
     return {
 
@@ -377,7 +451,6 @@ function createApplicationCard() {
         template: {
 
             outputs: [
-
                 {
 
                     carousel: {
@@ -388,22 +461,22 @@ function createApplicationCard() {
                         items: [
                             {
                                 title: "탄력근무 신청하기",
-                                description: "/근무신청 : 입력창 열기\n/근무현황 : 금주 신청 내역\n\nℹ️이창은 모든 직원이 동시 신청 가능합니다.\n매주 금요일 부터 차주 근무일자로 변경됩니다.",
-                                buttons: [                                    
+                                description: "@사용자 홍길동:사원등록\n@근무신청 : 입력창 열기\n@근무현황 : 금주 신청 내역\n\nℹ️이창은 모든 직원이 동시 신청 가능합니다.\n매주 금요일 부터 차주 근무일자로 변경됩니다.",
+                                buttons: [
                                     {
                                         action: "block",
                                         label: "📋 금주 신청 현황",
                                         blockId: process.env.KAKAO_APPLICATIONS_BLOCK_ID,
-                                        messageText: "1"
+                                        messageText: ""
                                     },
                                     {
                                         action: "webLink",
                                         label: "🈷️ 스프래드시트 보기",
-                                        webLinkUrl:"https://docs.google.com/spreadsheets/d/1hf2Y_8b5YBYwNnPhxuaUxdUe6kJ6e11ibDpmRkC1ctE/edit?usp=sharing"
-                                    }                                   
+                                        webLinkUrl: "https://docs.google.com/spreadsheets/d/1hf2Y_8b5YBYwNnPhxuaUxdUe6kJ6e11ibDpmRkC1ctE/edit?usp=sharing"
+                                    }
                                 ],
                             },
-                            
+
                             createDayCard(
                                 `월요일 (${formatDate(week.monday.date)})`,
                                 "monday"
@@ -710,7 +783,7 @@ function formatWorkDate(date) {
 
     return (
         `${dayNames[dateObject.getDay()]}요일`
-        +`(${month}.${day})`
+        + `(${month}.${day})`
     );
 
 }

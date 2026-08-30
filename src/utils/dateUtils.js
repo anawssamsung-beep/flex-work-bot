@@ -6,14 +6,14 @@ const TIMEZONE = "Asia/Seoul";
  */
 export function getKoreaNow() {
 
-  return new Date(
-    new Date().toLocaleString(
-      "en-US",
-      {
-        timeZone: TIMEZONE
-      }
-    )
-  );
+    return new Date(
+        new Date().toLocaleString(
+            "en-US",
+            {
+                timeZone: TIMEZONE
+            }
+        )
+    );
 
 }
 
@@ -23,20 +23,20 @@ export function getKoreaNow() {
  */
 export function formatDate(date) {
 
-  const yyyy =
-    date.getFullYear();
+    const yyyy =
+        date.getFullYear();
 
-  const mm =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
+    const mm =
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
-  const dd =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
+    const dd =
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
-  return `${yyyy}-${mm}-${dd}`;
+    return `${yyyy}-${mm}-${dd}`;
 
 }
 
@@ -45,18 +45,18 @@ export function formatDate(date) {
  * 날짜 + 일수
  */
 export function addDays(
-  date,
-  days
+    date,
+    days
 ) {
 
-  const result =
-    new Date(date);
+    const result =
+        new Date(date);
 
-  result.setDate(
-    result.getDate() + days
-  );
+    result.setDate(
+        result.getDate() + days
+    );
 
-  return result;
+    return result;
 
 }
 
@@ -66,32 +66,32 @@ export function addDays(
  */
 export function getThisMonday() {
 
-  const now =
-    getKoreaNow();
+    const now =
+        getKoreaNow();
 
-  const day =
-    now.getDay();
+    const day =
+        now.getDay();
 
-  const diff =
-    day === 0
-      ? -6
-      : 1 - day;
+    const diff =
+        day === 0
+            ? -6
+            : 1 - day;
 
-  const monday =
-    new Date(now);
+    const monday =
+        new Date(now);
 
-  monday.setDate(
-    now.getDate() + diff
-  );
+    monday.setDate(
+        now.getDate() + diff
+    );
 
-  monday.setHours(
-    0,
-    0,
-    0,
-    0
-  );
+    monday.setHours(
+        0,
+        0,
+        0,
+        0
+    );
 
-  return monday;
+    return monday;
 
 }
 
@@ -101,10 +101,10 @@ export function getThisMonday() {
  */
 export function getNextMonday() {
 
-  return addDays(
-    getThisMonday(),
-    7
-  );
+    return addDays(
+        getThisMonday(),
+        7
+    );
 
 }
 
@@ -115,24 +115,24 @@ export function getNextMonday() {
  * 근무일 전날 17:00
  */
 export function getDeadline(
-  workDate
+    workDate
 ) {
 
-  const deadline =
-    new Date(workDate);
+    const deadline =
+        new Date(workDate);
 
-  deadline.setDate(
-    workDate.getDate() - 1
-  );
+    deadline.setDate(
+        workDate.getDate() - 1
+    );
 
-  deadline.setHours(
-    17,
-    0,
-    0,
-    0
-  );
+    deadline.setHours(
+        17,
+        0,
+        0,
+        0
+    );
 
-  return deadline;
+    return deadline;
 
 }
 
@@ -141,16 +141,16 @@ export function getDeadline(
  * 신청 가능 여부
  */
 export function isApplyAvailable(
-  workDate
+    workDate
 ) {
 
-  const now =
-    getKoreaNow();
+    const now =
+        getKoreaNow();
 
-  const deadline =
-    getDeadline(workDate);
+    const deadline =
+        getDeadline(workDate);
 
-  return now < deadline;
+    return now < deadline;
 
 }
 
@@ -160,40 +160,40 @@ export function isApplyAvailable(
  */
 export function getApplicationWeek() {
 
-  const now =
-    getKoreaNow();
+    const now =
+        getKoreaNow();
 
-  const day =
-    now.getDay();
+    const day =
+        now.getDay();
 
 
-  /*
-   * 금요일 / 토요일 / 일요일
-   *
-   * → 다음 주
-   */
-  if (
-    day === 5 ||
-    day === 6 ||
-    day === 0
-  ) {
+    /*
+     * 금요일 / 토요일 / 일요일
+     *
+     * → 다음 주
+     */
+    if (
+        day === 5 ||
+        day === 6 ||
+        day === 0
+    ) {
+
+        return createWeekInfo(
+            getNextMonday()
+        );
+
+    }
+
+
+    /*
+     * 월~목
+     *
+     * → 현재 주
+     */
 
     return createWeekInfo(
-      getNextMonday()
+        getThisMonday()
     );
-
-  }
-
-
-  /*
-   * 월~목
-   *
-   * → 현재 주
-   */
-
-  return createWeekInfo(
-    getThisMonday()
-  );
 
 }
 
@@ -202,37 +202,37 @@ export function getApplicationWeek() {
  * 월 / 수 / 금 생성
  */
 function createWeekInfo(
-  monday
+    monday
 ) {
 
-  const wednesday =
-    addDays(
-      monday,
-      2
-    );
+    const wednesday =
+        addDays(
+            monday,
+            2
+        );
 
-  const friday =
-    addDays(
-      monday,
-      4
-    );
+    const friday =
+        addDays(
+            monday,
+            4
+        );
 
 
-  return {
+    return {
 
-    weekStart:
-      formatDate(monday),
+        weekStart:
+            formatDate(monday),
 
-    monday:
-      createDayInfo(monday),
+        monday:
+            createDayInfo(monday),
 
-    wednesday:
-      createDayInfo(wednesday),
+        wednesday:
+            createDayInfo(wednesday),
 
-    friday:
-      createDayInfo(friday)
+        friday:
+            createDayInfo(friday)
 
-  };
+    };
 
 }
 
@@ -241,21 +241,21 @@ function createWeekInfo(
  * 하루 정보
  */
 function createDayInfo(
-  date
+    date
 ) {
 
-  return {
+    return {
 
-    date:
-      formatDate(date),
+        date:
+            formatDate(date),
 
-    deadline:
-      getDeadline(date),
+        deadline:
+            getDeadline(date),
 
-    available:
-      isApplyAvailable(date)
+        available:
+            isApplyAvailable(date)
 
-  };
+    };
 
 }
 
@@ -265,37 +265,37 @@ function createDayInfo(
  */
 export function getKoreaDateTimeString() {
 
-  const now =
-    getKoreaNow();
+    const now =
+        getKoreaNow();
 
-  const yyyy =
-    now.getFullYear();
+    const yyyy =
+        now.getFullYear();
 
-  const mm =
-    String(
-      now.getMonth() + 1
-    ).padStart(2, "0");
+    const mm =
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
 
-  const dd =
-    String(
-      now.getDate()
-    ).padStart(2, "0");
+    const dd =
+        String(
+            now.getDate()
+        ).padStart(2, "0");
 
-  const hh =
-    String(
-      now.getHours()
-    ).padStart(2, "0");
+    const hh =
+        String(
+            now.getHours()
+        ).padStart(2, "0");
 
-  const mi =
-    String(
-      now.getMinutes()
-    ).padStart(2, "0");
+    const mi =
+        String(
+            now.getMinutes()
+        ).padStart(2, "0");
 
-  const ss =
-    String(
-      now.getSeconds()
-    ).padStart(2, "0");
+    const ss =
+        String(
+            now.getSeconds()
+        ).padStart(2, "0");
 
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 
 }

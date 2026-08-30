@@ -1,259 +1,234 @@
 import {
-  appendApplication,
-  findApplication,
-  updateApplication,
-  getUpcomingApplications,
-  findEmployeeName
+    appendApplication,
+    findApplication,
+    updateApplication,
+    getUpcomingApplications,
+    findEmployeeName
 } from "./googleSheetService.js";
 
 
 import {
-  getApplicationWeek,
-  getKoreaDateTimeString
+    getApplicationWeek,
+    getKoreaDateTimeString
 } from "../utils/dateUtils.js";
 
 
 const DAY_MAP = {
-
-  monday: true,
-
-  wednesday: true,
-
-  friday: true
-
+    monday: true,
+    wednesday: true,
+    friday: true
 };
 
 
 const TYPE_MAP = {
-
-  EARLY: true,
-
-  LATE: true
-
+    EARLY: true,
+    LATE: true
 };
 
 
 /**
  * 탄력근무 신청
  */
-export async function saveWorkApplication({
+export async function saveWorkApplication({ userId, day, type }) {
 
-  userId,
+    const employeeName = await findEmployeeName(userId);
 
-  day,
+    if (!employeeName) {
+        throw new Error(
+            "등록된 사용자 정보를 찾을 수 없습니다."
+        );
+    }
+    /*
+     * 사용자 확인
+     */
 
-  type
-
-}) {
-
-  const employeeName = await findEmployeeName(userId);
-
-  if (!employeeName) {
-
-    throw new Error(
-      "등록된 사용자 정보를 찾을 수 없습니다."
-    );
-
-  }
-  /*
-   * 사용자 확인
-   */
-
-  if (!userId) {
-
-    throw new Error(
-      "사용자 ID가 없습니다."
-    );
-
-  }
+    if (!userId) {
+        throw new Error(
+            "사용자 ID가 없습니다."
+        );
+    }
 
 
-  /*
-   * 요일 확인
-   */
-
-  if (!DAY_MAP[day]) {
-
-    throw new Error(
-      "잘못된 근무일입니다."
-    );
-
-  }
+    /*
+     * 요일 확인
+     */
+    if (!DAY_MAP[day]) {
+        throw new Error(
+            "잘못된 근무일입니다."
+        );
+    }
 
 
-  /*
-   * 근무형태 확인
-   */
-
-  if (!TYPE_MAP[type]) {
-
-    throw new Error(
-      "잘못된 근무형태입니다."
-    );
-
-  }
+    /*
+     * 근무형태 확인
+     */
+    if (!TYPE_MAP[type]) {
+        throw new Error(
+            "잘못된 근무형태입니다."
+        );
+    }
 
 
-  /*
-   * 신청 주차
-   */
+    /*
+     * 신청 주차
+     */
 
-  const week =
-    getApplicationWeek();
-
-
-  const dayInfo =
-    week[day];
+    const week =
+        getApplicationWeek();
 
 
-  if (!dayInfo) {
-
-    throw new Error(
-      "근무일 정보를 찾을 수 없습니다."
-    );
-
-  }
+    const dayInfo =
+        week[day];
 
 
-  /*
-   * 마감 확인
-   */
+    if (!dayInfo) {
 
-  if (!dayInfo.available) {
+        throw new Error(
+            "근무일 정보를 찾을 수 없습니다."
+        );
 
-    throw new Error(
-
-      `${dayInfo.date} 신청은 ` +
-      `전날 17:00에 마감되었습니다.`
-
-    );
-
-  }
+    }
 
 
-  /*
-   * 기존 신청 조회
-   */
+    /*
+     * 마감 확인
+     */
 
-  const existing =
-    await findApplication(
+    if (!dayInfo.available) {
 
-      userId,
+        throw new Error(
 
-      dayInfo.date
+            `${dayInfo.date} 신청은 ` +
+            `전날 17:00에 마감되었습니다.`
 
-    );
+        );
 
-
-  /*
-   * 현재 시간
-   */
-
-  const now =
-    getKoreaDateTimeString();
+    }
 
 
-  /*
-   * 이미 신청했으면 수정
-   */
+    /*
+     * 기존 신청 조회
+     */
 
-  if (existing) {
+    const existing =
+        await findApplication(
 
-    const old =
-      existing.row;
+            userId,
+
+            dayInfo.date
+
+        );
 
 
-    const updatedRow = [
+    /*
+     * 현재 시간
+     */
 
-      old[0],              // 신청ID
+    const now =
+        getKoreaDateTimeString();
 
-      old[1],              // 사용자ID
 
-      employeeName || old[2],      // 이름
+    /*
+     * 이미 신청했으면 수정
+     */
 
-      old[3],              // 근무일
+    if (existing) {
 
-      type,                // 근무형태
+        const old =
+            existing.row;
 
-      old[5],              // 주차
 
-      now,                 // 수정시간
+        const updatedRow = [
 
-      "ACTIVE"
+            old[0],              // 신청ID
+
+            old[1],              // 사용자ID
+
+            employeeName || old[2],      // 이름
+
+            old[3],              // 근무일
+
+            type,                // 근무형태
+
+            old[5],              // 주차
+
+            now,                 // 수정시간
+
+            "ACTIVE"
+
+        ];
+
+
+        await updateApplication(
+
+            existing.rowNumber,
+
+            updatedRow
+
+        );
+
+
+        return {
+
+            action:
+                "UPDATE",
+
+            message:
+
+                `${dayInfo.date} 신청을 ` +
+                `${getTypeName(type)}으로 변경했습니다.`
+
+        };
+
+    }
+
+
+    /*
+     * 신규 신청
+     */
+
+    const applicationId =
+        `${Date.now()}-${userId}`;
+
+
+    const row = [
+
+        applicationId,
+
+        userId,
+
+        employeeName || "",
+
+        dayInfo.date,
+
+        type,
+
+        week.weekStart,
+
+        now,
+
+        "ACTIVE"
 
     ];
 
 
-    await updateApplication(
-
-      existing.rowNumber,
-
-      updatedRow
-
+    await appendApplication(
+        row
     );
 
 
     return {
 
-      action:
-        "UPDATE",
+        action:
+            "INSERT",
 
-      message:
+        message:
 
-        `${dayInfo.date} 신청을 ` +
-        `${getTypeName(type)}으로 변경했습니다.`
+            `${dayInfo.date} ` +
+            `${getTypeName(type)} 신청이 ` +
+            `저장되었습니다.`
 
     };
-
-  }
-
-
-  /*
-   * 신규 신청
-   */
-
-  const applicationId =
-    `${Date.now()}-${userId}`;
-
-
-  const row = [
-
-    applicationId,
-
-    userId,
-
-    employeeName || "",
-
-    dayInfo.date,
-
-    type,
-
-    week.weekStart,
-
-    now,
-
-    "ACTIVE"
-
-  ];
-
-
-  await appendApplication(
-    row
-  );
-
-
-  return {
-
-    action:
-      "INSERT",
-
-    message:
-
-      `${dayInfo.date} ` +
-      `${getTypeName(type)} 신청이 ` +
-      `저장되었습니다.`
-
-  };
 
 }
 
@@ -264,128 +239,128 @@ export async function saveWorkApplication({
  */
 export async function cancelWorkApplication({
 
-  userId,
+    userId,
 
-  day
+    day
 
 }) {
 
-  if (!userId) {
+    if (!userId) {
 
-    throw new Error(
-      "사용자 ID가 없습니다."
+        throw new Error(
+            "사용자 ID가 없습니다."
+        );
+
+    }
+
+
+    const week =
+        getApplicationWeek();
+
+
+    const dayInfo =
+        week[day];
+
+
+    if (!dayInfo) {
+
+        throw new Error(
+            "잘못된 근무일입니다."
+        );
+
+    }
+
+
+    /*
+     * 마감 이후 취소 불가
+     */
+
+    if (!dayInfo.available) {
+
+        throw new Error(
+
+            `${dayInfo.date} 취소 가능 시간이 ` +
+            `지났습니다.`
+
+        );
+
+    }
+
+
+    /*
+     * 기존 신청 검색
+     */
+
+    const existing =
+        await findApplication(
+
+            userId,
+
+            dayInfo.date
+
+        );
+
+
+    if (!existing) {
+
+        throw new Error(
+
+            `${dayInfo.date} 신청내역이 없습니다.`
+
+        );
+
+    }
+
+
+    const old =
+        existing.row;
+
+
+    /*
+     * CANCEL 처리
+     */
+
+    const updatedRow = [
+
+        old[0],
+
+        old[1],
+
+        old[2],
+
+        old[3],
+
+        old[4],
+
+        old[5],
+
+        getKoreaDateTimeString(),
+
+        "CANCEL"
+
+    ];
+
+
+    await updateApplication(
+
+        existing.rowNumber,
+
+        updatedRow
+
     );
 
-  }
 
+    return {
 
-  const week =
-    getApplicationWeek();
+        action:
+            "CANCEL",
 
+        message:
 
-  const dayInfo =
-    week[day];
+            `${dayInfo.date} 신청을 ` +
+            `취소했습니다.`
 
-
-  if (!dayInfo) {
-
-    throw new Error(
-      "잘못된 근무일입니다."
-    );
-
-  }
-
-
-  /*
-   * 마감 이후 취소 불가
-   */
-
-  if (!dayInfo.available) {
-
-    throw new Error(
-
-      `${dayInfo.date} 취소 가능 시간이 ` +
-      `지났습니다.`
-
-    );
-
-  }
-
-
-  /*
-   * 기존 신청 검색
-   */
-
-  const existing =
-    await findApplication(
-
-      userId,
-
-      dayInfo.date
-
-    );
-
-
-  if (!existing) {
-
-    throw new Error(
-
-      `${dayInfo.date} 신청내역이 없습니다.`
-
-    );
-
-  }
-
-
-  const old =
-    existing.row;
-
-
-  /*
-   * CANCEL 처리
-   */
-
-  const updatedRow = [
-
-    old[0],
-
-    old[1],
-
-    old[2],
-
-    old[3],
-
-    old[4],
-
-    old[5],
-
-    getKoreaDateTimeString(),
-
-    "CANCEL"
-
-  ];
-
-
-  await updateApplication(
-
-    existing.rowNumber,
-
-    updatedRow
-
-  );
-
-
-  return {
-
-    action:
-      "CANCEL",
-
-    message:
-
-      `${dayInfo.date} 신청을 ` +
-      `취소했습니다.`
-
-  };
+    };
 
 }
 
@@ -395,42 +370,42 @@ export async function cancelWorkApplication({
  */
 function getTypeName(type) {
 
-  return type === "EARLY"
-    ? "일찍"
-    : "늦게";
+    return type === "EARLY"
+        ? "일찍"
+        : "늦게";
 
 }
 export async function getUpcomingWorkApplications() {
 
-  const rows =
-    await getUpcomingApplications();
+    const rows =
+        await getUpcomingApplications();
 
-  return rows.map(row => ({
+    return rows.map(row => ({
 
-    applicationId:
-      row[0],
+        applicationId:
+            row[0],
 
-    userId:
-      row[1],
+        userId:
+            row[1],
 
-    name:
-      row[2],
+        name:
+            row[2],
 
-    workDate:
-      row[3],
+        workDate:
+            row[3],
 
-    type:
-      row[4],
+        type:
+            row[4],
 
-    weekStart:
-      row[5],
+        weekStart:
+            row[5],
 
-    updatedAt:
-      row[6],
+        updatedAt:
+            row[6],
 
-    status:
-      row[7]
+        status:
+            row[7]
 
-  }));
+    }));
 
 }
