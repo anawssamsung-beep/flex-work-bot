@@ -13,7 +13,13 @@ app.use(
     "/kakao",
     kakaoRouter
 );
-
+app.get("/check", (req, res) => {
+  res.json({
+    success: true,
+    service: "flex-work-bot",
+    message: "server is running"
+  });
+});
 
 const PORT =
     process.env.PORT || 3000;
