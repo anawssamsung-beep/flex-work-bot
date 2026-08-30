@@ -35,14 +35,15 @@ export async function saveUser({ userId,userName }) {
 
 
     const employee = await findEmployeeInfo(userId);
-
+    console.log("employee.userId", employee.userId);
+    console.log("employee.userName", employee.userName);
+    console.log("employee.rowNumber", employee.rowNumber);
     //같음    
     if (employee.userName === userName) {
         
         return {
             action: "DUPLICATE",
-            message:
-                `이미 등록된 이름입니다.` 
+            message: `이미 등록된 이름입니다.` 
         };
     }
     //수정    
