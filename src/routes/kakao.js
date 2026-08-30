@@ -266,7 +266,7 @@ function createApplicationCard() {
                         items: [
                             {
                                 title: "시간선택근무 신청하기",
-                                description: "@사원 홍길동 : 사원사용 등록\n@등록 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️매주 금요일 부터 차주 근무일자로 변경됩니다.",
+                                description: "@사원 홍길동 : 사원사용 등록\n@등록 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️ 매주 금요일 부터 차주 근무일자로 변경됩니다.\nℹ️ 등록/수정은 하루전 17:00까지 가능합니다.",
                                 buttons: [
                                     {
                                         action: "block",

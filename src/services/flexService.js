@@ -51,9 +51,6 @@ export async function saveUser({ userId,userName }) {
             message: `${userName}님 사용등록이 완료 되었습니다.`
         };
     }
-    console.log("employee.userId", employee.userId);
-    console.log("employee.userName", employee.userName);
-    console.log("employee.rowNumber", employee.rowNumber);
     //같음    
     if (employee.userName === userName) {
         
