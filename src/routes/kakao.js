@@ -65,21 +65,21 @@ router.post(
             if (!userId) {
                 return res.json(
                     simpleText(
-                        "⚠️사용자 정보를 확인할 수 없습니다."
+                        "⚠️ 사용자 정보를 확인할 수 없습니다."
                     )
                 );
             }
             if (utterance.trim() === "@사원등록") {
                 return res.json(
                     simpleText(
-                        "⚠️이름을 입력해주세요"
+                        "⚠️ 이름을 입력해주세요"
                     )
                 );
             }
             if (!userName) {
                 return res.json(
                     simpleText(
-                        "⚠️등록된 직원이름이 아닙니다. 관리자에게 문의해주세요."
+                        "⚠️ 등록된 직원이름이 아닙니다. 관리자에게 문의해주세요."
                     )
                 );
             }
@@ -171,7 +171,7 @@ router.post("/apply",
 
             return res.json(
                 simpleText(
-                    `✅ ${result.message}`
+                    `${result.message}`
                 )
             );
         } catch (error) {
@@ -477,7 +477,7 @@ function getTypeEmoji(type) {
 }
 function getTypeName(type) {
     return type === "EARLY"
-        ? "일찍 Early"
-        : "늦게 Late";
+        ? "Early"
+        : "Late";
 }
 export default router;

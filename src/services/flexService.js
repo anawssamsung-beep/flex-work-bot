@@ -172,8 +172,8 @@ export async function saveWorkApplication({ userId, day, type }) {
         return {
             action: "UPDATE",
             message:
-                `${dayInfo.date} 신청을 ` +
-                `${getTypeName(type)}으로 변경했습니다.`
+                `✴️${dayInfo.date} 근무를 ` +
+                `${getTypeName(type)}로 변경했습니다.`
         };
     }
     /*
@@ -198,9 +198,8 @@ export async function saveWorkApplication({ userId, day, type }) {
     return {
         action: "INSERT",
         message:
-            `${dayInfo.date} ` +
-            `${getTypeName(type)} 신청이 ` +
-            `저장되었습니다.`
+            `✅ ${dayInfo.date} 근무를 ` +
+            `${getTypeName(type)}로 신청했습니다. ` 
     };
 
 }
@@ -250,62 +249,33 @@ export async function cancelWorkApplication({userId, day}) {
 
 
     if (!existing) {
-
         throw new Error(
-
             `${dayInfo.date} 신청내역이 없습니다.`
-
         );
-
     }
 
-
-    const old =
-        existing.row;
-
-
+    const old =existing.row;
     /*
      * CANCEL 처리
      */
-
     const updatedRow = [
-
         old[0],
-
         old[1],
-
         old[2],
-
         old[3],
-
         old[4],
-
         old[5],
-
         getKoreaDateTimeString(),
-
         "CANCEL"
-
     ];
-
-
     await updateApplication(
-
         existing.rowNumber,
-
         updatedRow
-
     );
-
-
     return {
-
-        action:
-            "CANCEL",
-
+        action:"CANCEL",
         message:
-
-            `${dayInfo.date} 신청을 ` +
+            `${dayInfo.date} 탄력근무 신청을 ` +
             `취소했습니다.`
 
     };
@@ -319,8 +289,8 @@ export async function cancelWorkApplication({userId, day}) {
 function getTypeName(type) {
 
     return type === "EARLY"
-        ? "일찍"
-        : "늦게";
+        ? "일찍 Early"
+        : "늦게 Late";
 
 }
 export async function getUpcomingWorkApplications() {
