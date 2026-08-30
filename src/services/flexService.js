@@ -1,9 +1,11 @@
 import {
+    appendEmployee,
+    updateEmployee,
     appendApplication,
     findApplication,
     updateApplication,
     getUpcomingApplications,
-    findEmployeeName
+    findEmployeeInfo
 } from "./googleSheetService.js";
 
 
@@ -29,11 +31,65 @@ const TYPE_MAP = {
 /**
  * 탄력근무 신청
  */
+export async function saveUser({ userId,userName }) {
+
+
+    const employee = await findEmployeeInfo(userId);
+
+    //같음    
+    if (employee.userName === userName) {
+        
+        return {
+            action: "DUPLICATE",
+            message:
+                `이미 등록된 이름입니다.` 
+        };
+    }
+    //수정    
+    if (employee.userId) {
+        //수정
+
+        const updatedRow = [
+            employee.userId,             // 사용자ID
+            employee.userName,           // 이름
+            "Y",      // 이름
+        ];
+        await updateEmployee(
+            employee.rowNumber,
+            updatedRow
+        );
+        return {
+            action: "UPDATE",
+            message: `${userName}님 이름으로 변경되었습니다.`
+        };
+
+    }
+    //신규    
+    if (!employee.userId) {
+
+        const updatedRow = [
+            employee.userId,             // 사용자ID
+            employee.userName,           // 이름
+            "Y",      // 이름
+        ];
+        await appendEmployee(
+            updatedRow
+        );
+        return {
+            action: "INSERT",
+            message: `${userName}님 사용자등록이 완료 되었습니다.`
+        };
+    }
+
+/**
+ * 탄력근무 신청
+ */
+}
 export async function saveWorkApplication({ userId, day, type }) {
 
-    const employeeName = await findEmployeeName(userId);
+    const employee = await findEmployeeInfo(userId);
 
-    if (!employeeName) {
+    if (!employee.userName) {
         throw new Error(
             "등록된 사용자 정보를 찾을 수 없습니다."
         );
@@ -47,8 +103,6 @@ export async function saveWorkApplication({ userId, day, type }) {
             "사용자 ID가 없습니다."
         );
     }
-
-
     /*
      * 요일 확인
      */
@@ -57,8 +111,6 @@ export async function saveWorkApplication({ userId, day, type }) {
             "잘못된 근무일입니다."
         );
     }
-
-
     /*
      * 근무형태 확인
      */
@@ -67,167 +119,85 @@ export async function saveWorkApplication({ userId, day, type }) {
             "잘못된 근무형태입니다."
         );
     }
-
-
     /*
      * 신청 주차
      */
-
-    const week =
-        getApplicationWeek();
-
-
-    const dayInfo =
-        week[day];
-
-
+    const week = getApplicationWeek();
+    const dayInfo = week[day];
     if (!dayInfo) {
-
         throw new Error(
             "근무일 정보를 찾을 수 없습니다."
         );
-
     }
-
-
     /*
      * 마감 확인
      */
 
     if (!dayInfo.available) {
-
         throw new Error(
-
             `${dayInfo.date} 신청은 ` +
             `전날 17:00에 마감되었습니다.`
-
         );
-
     }
-
-
     /*
      * 기존 신청 조회
      */
-
-    const existing =
-        await findApplication(
-
-            userId,
-
-            dayInfo.date
-
-        );
-
-
+    const existing = await findApplication(userId, dayInfo.date);
     /*
      * 현재 시간
      */
-
-    const now =
-        getKoreaDateTimeString();
-
-
+    const now = getKoreaDateTimeString();
     /*
      * 이미 신청했으면 수정
      */
 
     if (existing) {
-
-        const old =
-            existing.row;
-
-
+        const old = existing.row;
         const updatedRow = [
-
             old[0],              // 신청ID
-
             old[1],              // 사용자ID
-
-            employeeName || old[2],      // 이름
-
+            employee.userName || old[2],      // 이름
             old[3],              // 근무일
-
             type,                // 근무형태
-
             old[5],              // 주차
-
             now,                 // 수정시간
-
             "ACTIVE"
-
         ];
-
-
         await updateApplication(
-
             existing.rowNumber,
-
             updatedRow
-
         );
-
-
         return {
-
-            action:
-                "UPDATE",
-
+            action: "UPDATE",
             message:
-
                 `${dayInfo.date} 신청을 ` +
                 `${getTypeName(type)}으로 변경했습니다.`
-
         };
-
     }
-
-
     /*
      * 신규 신청
      */
 
-    const applicationId =
-        `${Date.now()}-${userId}`;
-
-
+    const applicationId = `${Date.now()}-${userId}`;
     const row = [
-
         applicationId,
-
         userId,
-
-        employeeName || "",
-
+        employee.userName || "",
         dayInfo.date,
-
         type,
-
         week.weekStart,
-
         now,
-
         "ACTIVE"
-
     ];
-
-
     await appendApplication(
         row
     );
-
-
     return {
-
-        action:
-            "INSERT",
-
+        action: "INSERT",
         message:
-
             `${dayInfo.date} ` +
             `${getTypeName(type)} 신청이 ` +
             `저장되었습니다.`
-
     };
 
 }
@@ -237,60 +207,35 @@ export async function saveWorkApplication({ userId, day, type }) {
 /**
  * 신청 취소
  */
-export async function cancelWorkApplication({
-
-    userId,
-
-    day
-
-}) {
+export async function cancelWorkApplication({userId, day}) {
 
     if (!userId) {
-
         throw new Error(
             "사용자 ID가 없습니다."
         );
-
     }
+    const week = getApplicationWeek();
 
 
-    const week =
-        getApplicationWeek();
-
-
-    const dayInfo =
-        week[day];
-
+    const dayInfo = week[day];
 
     if (!dayInfo) {
-
         throw new Error(
             "잘못된 근무일입니다."
         );
-
     }
-
-
     /*
      * 마감 이후 취소 불가
      */
-
     if (!dayInfo.available) {
-
         throw new Error(
-
             `${dayInfo.date} 취소 가능 시간이 ` +
             `지났습니다.`
-
         );
-
     }
-
-
     /*
      * 기존 신청 검색
      */
-
     const existing =
         await findApplication(
 
@@ -377,35 +322,17 @@ function getTypeName(type) {
 }
 export async function getUpcomingWorkApplications() {
 
-    const rows =
-        await getUpcomingApplications();
+    const rows = await getUpcomingApplications();
 
     return rows.map(row => ({
-
-        applicationId:
-            row[0],
-
-        userId:
-            row[1],
-
-        name:
-            row[2],
-
-        workDate:
-            row[3],
-
-        type:
-            row[4],
-
-        weekStart:
-            row[5],
-
-        updatedAt:
-            row[6],
-
-        status:
-            row[7]
-
+        applicationId   : row[0],
+        userId          : row[1],
+        name            : row[2],
+        workDate        : row[3],
+        type            : row[4],
+        weekStart       : row[5],
+        updatedAt       : row[6],
+        status          : row[7]
     }));
 
 }

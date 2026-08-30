@@ -2,82 +2,74 @@ import { google } from "googleapis";
 
 
 const privateKey =
-  process.env.GOOGLE_PRIVATE_KEY;
+    process.env.GOOGLE_PRIVATE_KEY;
 
 
 if (!privateKey) {
 
-  throw new Error(
-    "GOOGLE_PRIVATE_KEY가 없습니다."
-  );
+    throw new Error(
+        "GOOGLE_PRIVATE_KEY가 없습니다."
+    );
 
 }
 
 
 const auth =
-  new google.auth.GoogleAuth({
+    new google.auth.GoogleAuth({
 
-    credentials: {
+        credentials: {
 
-      project_id:
-        process.env.GOOGLE_PROJECT_ID,
+            project_id:
+                process.env.GOOGLE_PROJECT_ID,
 
-      client_email:
-        process.env.GOOGLE_CLIENT_EMAIL,
+            client_email:
+                process.env.GOOGLE_CLIENT_EMAIL,
 
-      private_key:
-        privateKey.replace(
-          /\\n/g,
-          "\n"
-        )
+            private_key:
+                privateKey.replace(
+                    /\\n/g,
+                    "\n"
+                )
 
-    },
+        },
 
-    scopes: [
-      "https://www.googleapis.com/auth/spreadsheets"
-    ]
+        scopes: [
+            "https://www.googleapis.com/auth/spreadsheets"
+        ]
 
-  });
+    });
 
 
 const sheets =
-  google.sheets({
+    google.sheets({
 
-    version: "v4",
+        version: "v4",
 
-    auth
+        auth
 
-  });
+    });
 
 
 const spreadsheetId =
-  process.env.GOOGLE_SHEET_ID;
+    process.env.GOOGLE_SHEET_ID;
 
 
-const APPLICATION_RANGE =
-  "신청!A:H";
-const EMPLOYEE_RANGE =
-  "직원!A:C";
+const APPLICATION_RANGE = "신청!A:H";
+const EMPLOYEE_RANGE = "직원!A:C";
 
 /**
  * 신청내역 전체 조회
  */
 export async function getApplications() {
 
-  const result =
-    await sheets.spreadsheets.values.get({
-
-      spreadsheetId,
-
-      range:
-        APPLICATION_RANGE
-
-    });
-
-
-  return (
-    result.data.values || []
-  );
+    const result =
+        await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: APPLICATION_RANGE
+        });
+    return (
+        result.data.values || []
+    );
 
 }
 
@@ -86,120 +78,124 @@ export async function getApplications() {
  * 사용자 + 근무일 신청 조회
  */
 export async function findApplication(
-  userId,
-  workDate
+    userId,
+    workDate
 ) {
 
-  const rows =
-    await getApplications();
+    const rows =
+        await getApplications();
 
 
-  for (
-    let i = 1;
-    i < rows.length;
-    i++
-  ) {
-
-    const row =
-      rows[i];
-
-
-    const rowUserId =
-      row[1] || "";
-
-    const rowWorkDate =
-      row[3] || "";
-
-    const rowStatus =
-      row[7] || "";
-
-
-    if (
-      rowUserId === userId &&
-      rowWorkDate === workDate &&
-      rowStatus === "ACTIVE"
+    for (
+        let i = 1;
+        i < rows.length;
+        i++
     ) {
 
-      return {
+        const row =
+            rows[i];
 
-        rowNumber:
-          i + 1,
 
-        row
+        const rowUserId =
+            row[1] || "";
 
-      };
+        const rowWorkDate =
+            row[3] || "";
+
+        const rowStatus =
+            row[7] || "";
+
+
+        if (
+            rowUserId === userId &&
+            rowWorkDate === workDate &&
+            rowStatus === "ACTIVE"
+        ) {
+
+            return {
+
+                rowNumber:
+                    i + 1,
+
+                row
+
+            };
+
+        }
 
     }
 
-  }
 
-
-  return null;
+    return null;
 
 }
 
 
 /**
- * 신청 추가
+ * 사용자 추가
  */
-export async function appendApplication(
-  row
-) {
-
-  await sheets.spreadsheets.values.append({
-
-    spreadsheetId,
-
-    range:
-      APPLICATION_RANGE,
-
-    valueInputOption:
-      "USER_ENTERED",
-
-    insertDataOption:
-      "INSERT_ROWS",
-
-    requestBody: {
-
-      values: [
-        row
-      ]
-
-    }
-
-  });
-
+export async function appendEmployee(row) {
+    await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: EMPLOYEE_RANGE,
+        valueInputOption: "USER_ENTERED",
+        insertDataOption: "INSERT_ROWS",
+        requestBody: {
+            values: [
+                row
+            ]
+        }
+    });
 }
 
+/**
+ * 사용자 수정
+ */
+export async function updateEmployee(rowNumber, row) {
+
+    await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `직원!A${rowNumber}:C${rowNumber}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+            values: [
+                row
+            ]
+        }
+    });
+}
+/**
+ * 신청 추가
+ */
+export async function appendApplication(row) {
+    await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: APPLICATION_RANGE,
+        valueInputOption: "USER_ENTERED",
+        insertDataOption: "INSERT_ROWS",
+        requestBody: {
+            values: [
+                row
+            ]
+        }
+    });
+}
 
 /**
  * 신청 수정
  */
-export async function updateApplication(
-  rowNumber,
-  row
-) {
+export async function updateApplication(rowNumber, row) {
 
-  await sheets.spreadsheets.values.update({
-
-    spreadsheetId,
-
-    range:
-      `신청!A${rowNumber}:H${rowNumber}`,
-
-    valueInputOption:
-      "USER_ENTERED",
-
-    requestBody: {
-
-      values: [
-        row
-      ]
-
-    }
-
-  });
-
+    await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `신청!A${rowNumber}:H${rowNumber}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+            values: [
+                row
+            ]
+        }
+    });
 }
 /**
  * 오늘 포함 이후 신청 현황 조회
@@ -209,100 +205,69 @@ export async function updateApplication(
  */
 export async function getUpcomingApplications() {
 
-  const rows =
-    await getApplications();
+    const rows =
+        await getApplications();
 
-  if (rows.length <= 1) {
-    return [];
-  }
+    if (rows.length <= 1) {
+        return [];
+    }
 
-  const today =
-    new Date()
-      .toLocaleDateString(
-        "sv-SE",
-        {
-          timeZone: "Asia/Seoul"
-        }
-      );
+    const today =
+        new Date()
+            .toLocaleDateString(
+                "sv-SE",
+                {
+                    timeZone: "Asia/Seoul"
+                }
+            );
 
-  return rows
-    .slice(1)
-    .filter(row => {
+    return rows
+        .slice(1)
+        .filter(row => {
 
-      const workDate =
-        row[3] || "";
+            const workDate =
+                row[3] || "";
 
-      const status =
-        row[7] || "";
+            const status =
+                row[7] || "";
 
-      if (
-        !workDate ||
-        status !== "ACTIVE"
-      ) {
-        return false;
-      }
+            if (
+                !workDate ||
+                status !== "ACTIVE"
+            ) {
+                return false;
+            }
 
-      return workDate >= today;
+            return workDate >= today;
 
-    })
-    .sort((a, b) =>
-      a[3].localeCompare(b[3])
-    );
+        })
+        .sort((a, b) =>
+            a[3].localeCompare(b[3])
+        );
 
 }
-export async function findEmployeeName(
-  userId
-) {
+export async function findEmployeeInfo(userId) {
 
-  const result =
-    await sheets.spreadsheets.values.get({
+    const result = await sheets.spreadsheets.values.get({ spreadsheetId, range: EMPLOYEE_RANGE });
+    const rows = result.data.values || [];
 
-      spreadsheetId,
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const rowUserId = row[0] || "";
+        const name = row[1] || "";
+        const enabled = row[2] || "Y";
 
-      range:
-        EMPLOYEE_RANGE
-
-    });
-
-
-  const rows =
-    result.data.values || [];
-
-
-  for (
-    let i = 1;
-    i < rows.length;
-    i++
-  ) {
-
-    const row =
-      rows[i];
-
-
-    const rowUserId =
-      row[0] || "";
-
-
-    const name =
-      row[1] || "";
-
-
-    const enabled =
-      row[2] || "Y";
-
-
-    if (
-      rowUserId === userId &&
-      enabled === "Y"
-    ) {
-
-      return name;
+        if (rowUserId === userId && enabled === "Y") {
+            return {
+                userName: name, 
+                userId : rowUserId,
+                rowNumber: i + 1,
+            };
+        }
 
     }
 
-  }
 
-
-  return null;
+    return null;
 
 }
