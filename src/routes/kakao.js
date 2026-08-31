@@ -267,7 +267,7 @@ function createApplicationCard() {
                         items: [
                             {
                                 title: "시간선택근무 신청하기",
-                                description: "@사원 홍길동 : 사원사용 등록\n@등록 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️ 매주 금요일 부터 차주 근무일자로 변경됩니다.\nℹ️ 등록/수정은 하루전 17:00까지 가능합니다.",
+                                description: "@사원등록 홍길동 : 사원사용 등록\n@근무신청 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️ 매주 금요일 부터 차주 근무일자로 변경됩니다.\nℹ️ 등록/수정은 하루전 17:00까지 가능합니다.",
                                 buttons: [
                                     {
                                         action: "block",
@@ -316,9 +316,16 @@ function formatDate(date) {
  * 요일 카드
  */
 function createDayCard(dayName, day ,format) {
+    const dayInfo = week[day];
+    if (!dayInfo.available) {
+        return {
+            title: `${dayName} (${format})`,
+            description: "등록/수정이 마감되었습니다.",
+        }
+    }
     return {
         title: `${dayName} (${format})`,
-        description: "근무유형을 선택하세요.",
+        description: "Early, Late 근무유형을 선택하세요.\n다시 선택하면 수정/취소가 가능합니다.",
         buttons: [
             {
                 action: "block",
