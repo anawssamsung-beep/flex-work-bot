@@ -397,7 +397,7 @@ router.post( "/applications",
             }
             return res.json(
                 simpleText(
-                    createApplicationListTextAsc(
+                    createApplicationListText(
                         applications
                     )
                 )
@@ -419,7 +419,7 @@ router.post( "/applications",
 router.post( "/applications2",
     async (req, res) => {
         try {
-            console.log( "========== KAKAO APPLICATIONS ==========");
+            console.log( "========== KAKAO APPLICATIONS2 ==========");
 
             const applications = await getUpcomingWorkApplications();
             if (!applications.length) {
@@ -431,7 +431,7 @@ router.post( "/applications2",
             }
             return res.json(
                 simpleText(
-                    createApplicationListText(
+                    createApplicationListTextAsc(
                         applications
                     )
                 )
@@ -504,7 +504,7 @@ function createApplicationListTextAsc( applications ) {
         }
     );
     const lines = [
-        `📋 시간선택근무 현황 (역순 누적기록)`,
+        `시간선택근무 현황 (역순 누적기록)`,
         ""
     ];
 
