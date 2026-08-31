@@ -503,16 +503,6 @@ function createApplicationListTextAsc( applications ) {
             grouped[date][application.type]["users"].unshift(application);
         }
     );
-    rows.map(row => ({
-        applicationId   : row[0],
-        userId          : row[1],
-        name            : row[2],
-        workDate        : row[3],
-        type            : row[4],
-        weekStart       : row[5],
-        updatedAt       : row[6],
-        status          : row[7]
-    }));
     const lines = [
         `📋 시간선택근무 현황 (역순 누적기록)`,
         ""
@@ -524,9 +514,12 @@ function createApplicationListTextAsc( applications ) {
             lines.push(
                 formatWorkDate(date)
             );
-            grouped[date].forEach(
+            Object.keys(grouped[date])
+            .sort()
+            .forEach(
                 type => {
                     let names = [];
+                    console.log(type);
                     type["users"].forEach(
                         application => {
                             names.push(application.name);
