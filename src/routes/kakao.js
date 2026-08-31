@@ -87,11 +87,12 @@ router.post(
              * 신청 처리
              */
             const result = await saveUser({userId,userName});
-
+            let cards = createApplicationCard();
+            cards.template.outputs.unshift({
+                    simpleText: `✅ ${result.message}`
+            });
             return res.json(
-                simpleText(
-                    `✅ ${result.message}`
-                )
+                cards
             );
 
 
