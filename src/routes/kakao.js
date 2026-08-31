@@ -494,7 +494,7 @@ function createApplicationListTextAsc( applications ) {
         application => {
             const date = application.workDate;
             if (!grouped[date]) {
-                grouped[date] = [];
+                grouped[date] = {};
             }
             if (!grouped[date][application.type]) {
                 grouped[date][application.type]["users"] = [];
