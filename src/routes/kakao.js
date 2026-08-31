@@ -499,7 +499,7 @@ function createApplicationListTextAsc( applications ) {
             console.log(date);
             console.log(application.type);
             if (!grouped[date][application.type]) {
-                grouped[date][application.type].push({"users":[]});
+                grouped[date][application.type]={"typeName" :"","users":[]};
             }
             grouped[date][application.type]["typeName"] = application.type;
             grouped[date][application.type]["users"].unshift(application);
