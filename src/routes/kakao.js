@@ -267,7 +267,7 @@ function createApplicationCard() {
                         items: [
                             {
                                 title: "시간선택근무 신청하기",
-                                description: "@사원등록 홍길동 : 사원사용 등록\n@근무신청 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️ 금요일 부터 차주 근무신청으로 변경됩니다.\nℹ️ 등록/수정은 하루전 17:00까지 가능합니다.",
+                                description: "@사원등록 홍길동 : 사원사용 등록\n@근무신청 : 주간 입력창 열기\n@현황 : 금주 신청 내역 출력\n\nℹ️ 금요일 부터 차주 근무신청으로 변경됩니다.\nℹ️ 등록은 하루전 17:00까지 가능합니다.",
                                 buttons: [
                                     {
                                         action: "block",
@@ -391,7 +391,41 @@ router.post( "/applications",
             if (!applications.length) {
                 return res.json(
                     simpleText(
-                        "📋 신청된 탄력근무 내역이 없습니다."
+                        "📋 신청된 근무 내역이 없습니다."
+                    )
+                );
+            }
+            return res.json(
+                simpleText(
+                    createApplicationListTextAsc(
+                        applications
+                    )
+                )
+            );
+        } catch (error) {
+            console.error(
+                "Kakao Applications Error:",
+                error
+            );
+            return res.json(
+                simpleText( `⚠️ ${error.message}`)
+            );
+        }
+    }
+);
+/**
+ * 신청 현황 조회 Skill
+ */
+router.post( "/applications2",
+    async (req, res) => {
+        try {
+            console.log( "========== KAKAO APPLICATIONS ==========");
+
+            const applications = await getUpcomingWorkApplications();
+            if (!applications.length) {
+                return res.json(
+                    simpleText(
+                        "📋 신청된 근무 내역이 없습니다."
                     )
                 );
             }
@@ -447,6 +481,60 @@ function createApplicationListText( applications ) {
                         `${application.name}  ` +
                         `${getTypeEmoji(application.type)} ` +
                         `${getTypeName(application.type)}`
+                    );
+                }
+            );
+            lines.push("");
+        });
+    return lines.join("\n");
+}
+function createApplicationListTextAsc( applications ) {
+    const grouped = {};
+    applications.forEach(
+        application => {
+            const date = application.workDate;
+            if (!grouped[date]) {
+                grouped[date] = [];
+            }
+            if (!grouped[date][application.type]) {
+                grouped[date][application.type]["users"] = [];
+            }
+            grouped[date][application.type]["typeName"] = application.type;
+            grouped[date][application.type]["users"].unshift(application);
+        }
+    );
+    rows.map(row => ({
+        applicationId   : row[0],
+        userId          : row[1],
+        name            : row[2],
+        workDate        : row[3],
+        type            : row[4],
+        weekStart       : row[5],
+        updatedAt       : row[6],
+        status          : row[7]
+    }));
+    const lines = [
+        `📋 시간선택근무 현황 (역순 누적기록)`,
+        ""
+    ];
+
+    Object.keys(grouped)
+        .sort()
+        .forEach(date => {
+            lines.push(
+                formatWorkDate(date)
+            );
+            grouped[date].forEach(
+                type => {
+                    let names = [];
+                    type["users"].forEach(
+                        application => {
+                            names.push(application.name);
+                        }
+                    );
+                    lines.push(
+                        `${type.typeName}  ` +
+                        `${names.join(",")} ` 
                     );
                 }
             );
