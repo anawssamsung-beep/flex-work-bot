@@ -496,6 +496,8 @@ function createApplicationListTextAsc( applications ) {
             if (!grouped[date]) {
                 grouped[date] = {};
             }
+            console.log(date);
+            console.log(application.type);
             if (!grouped[date][application.type]) {
                 grouped[date][application.type]["users"] = [];
             }
