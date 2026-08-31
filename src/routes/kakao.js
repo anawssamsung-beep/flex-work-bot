@@ -496,8 +496,6 @@ function createApplicationListTextAsc( applications ) {
             if (!grouped[date]) {
                 grouped[date] = {};
             }
-            console.log(date);
-            console.log(application.type);
             if (!grouped[date][application.type]) {
                 grouped[date][application.type]={"typeName" :"","users":[]};
             }
@@ -513,20 +511,17 @@ function createApplicationListTextAsc( applications ) {
     Object.keys(grouped)
         .sort().reverse()
         .forEach(date => {
-            lines.push(
-                formatWorkDate(date)
-            );
             Object.keys(grouped[date])
             .sort()
             .forEach(type => {
                     let names = [];
-                    console.log(type);
                     grouped[date][type]["users"].forEach(
                         application => {
                             names.push(application.name);
                         }
                     );
                     lines.push(
+                        `${formatWorkDateAsc(date)} ` +
                         `${getTypeName(grouped[date][type].typeName)}  ` +
                         `${names.join(",")} ` 
                     );
@@ -559,7 +554,30 @@ function formatWorkDate(date) {
         `${dayNames[dateObject.getDay()]}요일`
         + `(${month}.${day})`
     );
+}
+function formatWorkDateAsc(date) {
 
+    const parts = date.split("-");
+    const month = Number(parts[1]);
+    const day = Number(parts[2]);
+    const dateObject = new Date(
+        Number(parts[0]),
+        month - 1,
+        day
+    );
+    const dayNames = [
+        "일",
+        "월",
+        "화",
+        "수",
+        "목",
+        "금",
+        "토"
+    ];
+    return (
+        `${month}.${day}`
+        +`(${dayNames[dateObject.getDay()]})`
+    );
 }
 function getTypeEmoji(type) {
     return type === "EARLY"
