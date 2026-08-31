@@ -516,17 +516,16 @@ function createApplicationListTextAsc( applications ) {
             );
             Object.keys(grouped[date])
             .sort()
-            .forEach(
-                type => {
+            .forEach(type => {
                     let names = [];
                     console.log(type);
-                    type["users"].forEach(
+                    grouped[date][type]["users"].forEach(
                         application => {
                             names.push(application.name);
                         }
                     );
                     lines.push(
-                        `${type.typeName}  ` +
+                        `${grouped[date][type].typeName}  ` +
                         `${names.join(",")} ` 
                     );
                 }
