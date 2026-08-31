@@ -501,8 +501,8 @@ function createApplicationListTextAsc( applications ) {
             if (!grouped[date][application.type]) {
                 grouped[date][application.type]={"typeName" :"","users":[]};
             }
-            grouped[date][application.type]["typeName"] = application.type;
-            grouped[date][application.type]["users"].unshift(application);
+            grouped[date][application.type].typeName = application.type;
+            grouped[date][application.type].users.unshift(application);
         }
     );
     const lines = [
@@ -511,7 +511,7 @@ function createApplicationListTextAsc( applications ) {
     ];
 
     Object.keys(grouped)
-        .sort()
+        .sort().reverse()
         .forEach(date => {
             lines.push(
                 formatWorkDate(date)
@@ -527,7 +527,7 @@ function createApplicationListTextAsc( applications ) {
                         }
                     );
                     lines.push(
-                        `${grouped[date][type].typeName}  ` +
+                        `${getTypeName(grouped[date][type].typeName)}  ` +
                         `${names.join(",")} ` 
                     );
                 }
