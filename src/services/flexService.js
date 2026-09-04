@@ -134,7 +134,7 @@ export async function saveWorkApplication({ userId, day, type ,mmdd}) {
 
     if (!dayInfo.available || dayInfo.date !== mmdd) {
         throw new Error(
-            `${dayInfo.date} 신청은 ` +
+            `${mmdd?mmdd:dayInfo.date} 신청은 ` +
             `전날 17:00에 마감되었습니다.`
         );
     }
