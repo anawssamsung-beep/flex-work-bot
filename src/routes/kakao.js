@@ -251,12 +251,13 @@ router.post(
         }
     }
 );
-const week = getApplicationWeek();
+
 
 /**
  * 신청 카드
  */
 function createApplicationCard() {
+    const week = getApplicationWeek();
     return {
         version: "2.0",
         template: {
@@ -316,6 +317,7 @@ function formatDate(date) {
  * 요일 카드
  */
 function createDayCard(dayName, day ,format) {
+    const week = getApplicationWeek();
     const dayInfo = week[day];
     if (!dayInfo.available) {
         return {

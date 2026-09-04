@@ -163,6 +163,7 @@ export function getApplicationWeek() {
      *
      * → 다음 주
      */
+    console.log("day" + day)
     if (
         day === 5 ||
         day === 6 ||
