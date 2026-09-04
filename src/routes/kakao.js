@@ -132,10 +132,12 @@ router.post("/apply",
             const clientExtra =req.body?.action?.clientExtra;
             const day =clientExtra?.day;
             const type =clientExtra?.type;
+            const mmdd =clientExtra?.mmdd;
 
             console.log("userId:",userId);
             console.log("day:",day);
             console.log("type:",type);
+            console.log("mmdd:",mmdd);
             /*
              * 사용자 ID 확인
              */
@@ -166,7 +168,8 @@ router.post("/apply",
             const result = await saveWorkApplication({
                 userId,
                 day,
-                type
+                type,
+                mmdd
             });
 
             return res.json(
@@ -286,17 +289,17 @@ function createApplicationCard() {
                             createDayCard(
                                 `월요일`,
                                 "monday",
-                                `${formatDate(week.monday.date)}`
+                                week.monday.date
                             ),
                             createDayCard(
                                 `수요일`,
                                 "wednesday",
-                                `${formatDate(week.wednesday.date)}`
+                                week.wednesday.date
                             ),
                             createDayCard(
                                 `금요일`,
                                 "friday",
-                                `${formatDate(week.friday.date)}`
+                                week.friday.date
                             )
                         ]
                     }
@@ -316,9 +319,12 @@ function formatDate(date) {
 /**
  * 요일 카드
  */
-function createDayCard(dayName, day ,format) {
+function createDayCard(dayName, day ,weekDate) {
+
     const week = getApplicationWeek();
     const dayInfo = week[day];
+    const format = formatDate(weekDate);
+    
     if (!dayInfo.available) {
         return {
             title: `${dayName} (${format})`,
@@ -335,7 +341,8 @@ function createDayCard(dayName, day ,format) {
                 blockId: process.env.KAKAO_APPLY_BLOCK_ID,
                 extra: {
                     day: day,
-                    type: "EARLY"
+                    type: "EARLY",
+                    mmdd: weekDate
                 },
                 messageText: `${format}일 🚀 일찍 출근 Early 등록`
             },
@@ -345,7 +352,8 @@ function createDayCard(dayName, day ,format) {
                 blockId: process.env.KAKAO_APPLY_BLOCK_ID,
                 extra: {
                     day: day,
-                    type: "LATE"
+                    type: "LATE",
+                    mmdd: weekDate
                 },
                 messageText: `${format}일 🛵 늦게 출근 Late 등록`
             },
@@ -355,7 +363,8 @@ function createDayCard(dayName, day ,format) {
                 blockId: process.env.KAKAO_CANCEL_BLOCK_ID,
                 extra: {
                     day: day,
-                    type: "CANCEL"
+                    type: "CANCEL",
+                    mmdd: weekDate
                 },
                 messageText: `${format}일 ❌ 취소 처리`
             }

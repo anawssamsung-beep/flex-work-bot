@@ -84,7 +84,7 @@ export async function saveUser({ userId,userName }) {
  * 탄력근무 신청
  */
 }
-export async function saveWorkApplication({ userId, day, type }) {
+export async function saveWorkApplication({ userId, day, type ,mmdd}) {
 
     const employee = await findEmployeeInfo(userId);
     
@@ -132,7 +132,7 @@ export async function saveWorkApplication({ userId, day, type }) {
      * 마감 확인
      */
 
-    if (!dayInfo.available) {
+    if (!dayInfo.available || dayInfo.date !== mmdd) {
         throw new Error(
             `${dayInfo.date} 신청은 ` +
             `전날 17:00에 마감되었습니다.`
